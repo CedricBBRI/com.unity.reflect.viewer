@@ -54,7 +54,7 @@ public class Web : MonoBehaviour
     IEnumerator createBuildingTable()
     {
         yield return new WaitForSeconds(10); // Waits 10s for the model to be loaded before creating the table
-        List<int> surfaceIDs = new List<int>();
+        List<string> surfaceIDs = new List<string>();
         List<string> surfaceArea = new List<string>();
         List<string> surfaceLevels = new List<string>();
         foreach (GameObject go in Resources.FindObjectsOfTypeAll(typeof(GameObject)) as GameObject[])
@@ -64,7 +64,7 @@ public class Web : MonoBehaviour
             {
                 if (go.name.Contains("Wall") || meta.GetParameter("Category").Contains("Wall") || go.name.Contains("Floor") || meta.GetParameter("Category").Contains("Floor"))
                 {
-                    surfaceIDs.Add(meta.GetInstanceID());
+                    surfaceIDs.Add(meta.GetParameter("Id"));
                     surfaceArea.Add(meta.GetParameter("Area"));
                     surfaceLevels.Add(meta.GetParameter("Base Constraint"));
                 }
@@ -72,6 +72,8 @@ public class Web : MonoBehaviour
         }
 
         WWWForm form = new WWWForm();
+        form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
+        form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
         for (int i = 0; i < surfaceIDs.Count; i++)
         {
             form.AddField("ID[]", surfaceIDs[i]);

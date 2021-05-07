@@ -5,11 +5,15 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Reflect; //Unity.Reflect has to be added to the asmdef in the current folder
-
+using System.Collections.ObjectModel;
 
 public class Web : MonoBehaviour
 {
     private bool buildingTableCreated = false;
+
+    private List<string> localSelectedTiles = new List<string>();
+    public ReadOnlyCollection<string> preselectedTiles { get { return localSelectedTiles.AsReadOnly(); } } // preselectedTiles can be read but not modified outside this class
+
     void Start()
     {
         // !! YOU NEED TO HAVE SET UP A VRITUALHOST NAMED 'bimexpo', pointing to the 'PHP' folder
@@ -18,6 +22,7 @@ public class Web : MonoBehaviour
         string csvPath = csvDir + "\\DB_Carrelages_Demo.csv";
         csvPath = csvPath.Replace("\\", "/");                   //SQL needs forwards slashes...
         StartCoroutine(CreateTableFromCSV(csvPath, "tptiles"));
+        StartCoroutine(CreateUserChoicesTable());
     }
 
     private void Update()
@@ -29,6 +34,25 @@ public class Web : MonoBehaviour
         }
     }
 
+    IEnumerator CreateUserChoicesTable()
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
+        form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
+
+        using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/CreateUserChoicesTable.php", form))
+        {
+            yield return www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                Debug.Log(www.downloadHandler.text);
+            }
+        }
+    }
     IEnumerator CreateTableFromCSV(string csvPath, string tableName)
     {
         WWWForm form = new WWWForm();
@@ -94,7 +118,53 @@ public class Web : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Gets the list of the names ('libelles') of all the preselected tiles in the project.
+    /// </summary>
+    IEnumerator RetrievePreselectedTiles()
+    {
+        yield return new WaitForSeconds(10); // If this function is called immediately after CreateTableFromCSV, it needs some time for the table to actually be created
+
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
+        form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
+
+        string[] phpReturnedList = { };
+        //List<string> preselectedTiles = new List<string>();
         
+
+        using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/GetTilePreselection.php", form))
+        {
+            yield return www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                string receivedTilesString = www.downloadHandler.text;
+                phpReturnedList = receivedTilesString.Split(';');
+            }
+        }
+
+        List<string> presT = new List<string>(phpReturnedList);
+        bool startRecordingResults = false;
+
+        foreach (string item in phpReturnedList)
+        {
+            if (startRecordingResults)
+            {
+                localSelectedTiles.Add(item);
+            }
+            if (item.Contains("RETURNS"))
+            {
+                startRecordingResults = true;
+            }
+        }
+
+        //yield return preselectedTiles;
+    }
 
     IEnumerator ExecutePHPScript(string uri)
     {

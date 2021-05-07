@@ -17,54 +17,7 @@ public class DBInteractions : MonoBehaviour
 
     //private MySqlConnection con;
 
-    /*
-    // Start is called before the first frame update
-    void Start()
-    {
-        try
-        {
-            Connect_DB();
-        }
-        catch 
-        {
-            return;
-        }
-        try
-        {
-            //createMySQLTableFromCSV(@"C:\Users\aca\Documents\Projects\BIMEXPO" + "\\DB_Carrelages_Demo.csv", database);
-            createBuildingTable();
-
-            //Create the user's choices DB
-            string createCmd = "CREATE TABLE IF NOT EXISTS c" + clientId + "_p" + projectId + "_choices ( id_surface SMALLINT UNSIGNED NOT NULL, id_tile SMALLINT UNSIGNED NOT NULL, PRIMARY KEY (id_surface) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
-        
-            MySqlCommand cmdSql = new MySqlCommand(createCmd, con);
-            MySqlDataReader myReader = cmdSql.ExecuteReader();
-            myReader.Close();
-        }
-        catch (Exception ex)
-        { 
-            Debug.Log(ex.Message);
-        }
-    }
-
-    /// <summary>
-    /// Gets the list of the names ('libelles') of all the preselected tiles in the project.
-    /// </summary>
-    /// <returns>The list of tiles.</string></returns>
-    public List<string> RetrievePreselectedTiles()
-    {
-        Connect_DB();
-        MySqlCommand joinTables = new MySqlCommand("SELECT tptiles.libelle FROM tptiles INNER JOIN preselections ON tptiles.id = preselections.tile_id;", con);
-        MySqlDataReader myReader = joinTables.ExecuteReader();
-
-        List<string> selectedTiles = new List<string>();
-        while (myReader.Read())
-        {
-            selectedTiles.Add(myReader["libelle"].ToString());
-        }
-        return selectedTiles;
-    }
-
+/*
     /// <summary>
     /// Given a tile name ('libelle'), finds the path to its texture, which is located in the table 'chemin_texture' column.
     /// For the moment this path is simply the name of the folder in which the textures are stored for a given tile.
@@ -122,24 +75,6 @@ public class DBInteractions : MonoBehaviour
         return data;
     }
 
-    /// <summary>
-    /// Establish a connection to the database with the credentials provided in the public variables.
-    /// </summary>
-    public void Connect_DB()
-    {
-        string cmd = "SERVER=" + host + ";port=3306;database=" + database + ";USER ID=" + username + ";PASSWORD=" + password + ";Pooling=true";
-        try
-        {
-            con = new MySqlConnection(cmd);
-            con.Open();
-        }
-        catch (Exception ex)
-        {
-            Debug.Log(ex.Message);
-            MessageBox.Show("Erreur de connection avec la base de données. Merci de vérifier que celle-ci est accessible.");
-            throw new Exception("DB connection error");
-        }
-    }
 
     public void changeMaterial(GameObject obj, string texturePath)
     {
@@ -182,61 +117,6 @@ public class DBInteractions : MonoBehaviour
         }
         Debug.Log("File doesn't exist!");
         return null;                                    // Return null if load failed
-    }
-
-    public void createMySQLTableFromCSV(string csvFilePath, string DBName) 
-    {
-        string deleteTableCmd = "DROP TABLE IF EXISTS " + tilesTable + ";";
-
-        string createCmd = "CREATE TABLE IF NOT EXISTS " + tilesTable + " ( code_lot VARCHAR(20), code_art VARCHAR(20), libelle VARCHAR(100), prix_vente VARCHAR(10), date_maj_pv VARCHAR(10), reimpression VARCHAR(10),";
-        createCmd = createCmd + " prix_anticipe VARCHAR(10), localisation VARCHAR(15), hs VARCHAR(10), etiquette_affiche VARCHAR(20), unite VARCHAR(5), type_art VARCHAR(10), conso VARCHAR(10),";
-        createCmd = createCmd + " ref VARCHAR(5), categorie VARCHAR(10), type_mat VARCHAR(10), resist_abrasion VARCHAR(10), resist_rayure VARCHAR(10), rectifie VARCHAR(10), etat_surface VARCHAR(10),";
-        createCmd = createCmd + " couleur VARCHAR(10), variation_chrom VARCHAR(5), couche_usure VARCHAR(10), chemin_texture VARCHAR(100), mur TINYINT NOT NULL, sol TINYINT NOT NULL, sdb TINYINT NOT NULL, id SMALLINT AUTO_INCREMENT PRIMARY KEY)";
-        createCmd = createCmd + "CHARACTER SET 'utf8' ENGINE=INNODB;";
-
-        //!!Path with FORWARD SLASHES!!
-        string fillCommand = "LOAD DATA LOCAL INFILE 'C:/Users/aca/Documents/Projects/BIMEXPO/DB_Carrelages_Demo.csv' INTO TABLE tptiles FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' IGNORE 1 LINES;"; // (@col1,@col2,@col3,@col4,@col5,@col6,@col7,@col8,@col9,@col10,@col11,@col12,@col13,@col14,@col15,@col16,@col17,@col18,@col19,@col20,@col21,@col22,@col23,@col24,@col25,@col26,@col27) SET 'libelle'=@col3,'chemin_texture'=@col24,'mur'=@col25,'sol'=@col26,'sdb'=@col27;";
-
-        //Remove useless columns
-        string removeCommand = "ALTER TABLE " + tilesTable;
-        List<string> uselessCols = new List<string>() { "code_lot", "code_art", "prix_vente", "date_maj_pv", "reimpression", "prix_anticipe", "localisation", "hs", "etiquette_affiche", "unite", "type_art", "conso", "ref", "categorie", "type_mat", "resist_abrasion", "resist_rayure", "rectifie", "etat_surface", "couleur", "variation_chrom", "couche_usure" };
-        int count = 0;
-        foreach (string item in uselessCols)
-        {
-            if (count == 0)
-                removeCommand = removeCommand + " DROP " + item;
-            else
-                removeCommand = removeCommand + ", DROP " + item;
-            count += 1;
-        }
-        removeCommand = removeCommand + ";";
-
-        try
-        {
-            Connect_DB();
-
-            MySqlCommand cmdSql0 = new MySqlCommand(deleteTableCmd, con);
-            MySqlDataReader myReader0 = cmdSql0.ExecuteReader();
-            myReader0.Close();
-
-            MySqlCommand cmdSql = new MySqlCommand(createCmd, con);
-            MySqlDataReader myReader = cmdSql.ExecuteReader();
-            myReader.Close();
-
-            MySqlCommand cmdSql2 = new MySqlCommand(fillCommand, con);
-            MySqlDataReader myReader2 = cmdSql2.ExecuteReader();
-            myReader2.Close();
-
-            MySqlCommand cmdSql3 = new MySqlCommand(removeCommand, con);
-            MySqlDataReader myReader3 = cmdSql3.ExecuteReader();
-            myReader3.Close();
-        }
-        catch (Exception ex)
-        {
-            Debug.Log(ex.Message);
-            return;
-        }
-        GameObject.FindGameObjectWithTag("Player").GetComponent<MenusHandler>().ActivatePreselectionMenu();
     }
 
     /// <summary>
@@ -345,51 +225,6 @@ public class DBInteractions : MonoBehaviour
             MySqlCommand cmdSql = new MySqlCommand(insertCmd, con);
             cmdSql.ExecuteNonQuery();
             con.Close();
-        }
-        catch (Exception ex)
-        {
-            Debug.Log(ex.Message);
-        }
-    }
-
-    void createBuildingTable()
-    {
-        //Create the table
-        string deleteTable = "DROP TABLE IF EXISTS c" + clientId + "_p" + projectId + "_surfaces;";
-        string createCmd = "CREATE TABLE IF NOT EXISTS c" + clientId + "_p" + projectId + "_surfaces ( id_surface SMALLINT UNSIGNED NOT NULL, room_name VARCHAR(20), level TINYINT, surface_group SMALLINT, PRIMARY KEY (id_surface) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
-        try
-        {
-            MySqlCommand cmdSql = new MySqlCommand(deleteTable + createCmd, con);
-            MySqlDataReader myReader = cmdSql.ExecuteReader();
-            myReader.Close();
-        }
-        catch (Exception ex)
-        {
-            Debug.Log(ex.Message);
-        }
-
-        //Populate the table
-        string insertCmd = "INSERT INTO c" + clientId + "_p" + projectId + "_surfaces (id_surface, room_name, level, surface_group) VALUES";
-        int count = 0;
-        foreach (GameObject go in Resources.FindObjectsOfTypeAll(typeof(GameObject)) as GameObject[])
-        {
-            if (go.layer == 6 || go.layer == 7)
-            {
-                if (count > 0)
-                {
-                    insertCmd = insertCmd + ", ";
-                }
-                insertCmd = insertCmd + "( '" + go.GetComponent<dummyMetadataScript>().ID + "', '" + go.GetComponent<dummyMetadataScript>().room + "', '" + go.GetComponent<dummyMetadataScript>().level + "', NULL)";
-                count += 1;
-            }
-        }
-        insertCmd = insertCmd + ";";
-
-        try
-        {
-            MySqlCommand cmdSql = new MySqlCommand(insertCmd, con);
-            MySqlDataReader myReader = cmdSql.ExecuteReader();
-            myReader.Close();
         }
         catch (Exception ex)
         {

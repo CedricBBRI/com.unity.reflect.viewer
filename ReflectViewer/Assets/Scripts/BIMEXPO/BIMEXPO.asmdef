@@ -2,7 +2,8 @@
     "name": "BIMEXPO",
     "rootNamespace": "",
     "references": [
-        "GUID:8c09aa1e4b73db04094be9d510142dd2"
+        "GUID:8c09aa1e4b73db04094be9d510142dd2",
+        "GUID:6cf67fea318af2844a952982933563b0"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

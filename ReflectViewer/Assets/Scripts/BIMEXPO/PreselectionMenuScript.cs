@@ -1,16 +1,19 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections.ObjectModel;
 
 public class PreselectionMenuScript : MonoBehaviour
 {
-    private VisualElement myBox;
-    private Button okButton;
+    private VisualElement myBox, mainMenu;
+    private Button okButton, showHideMenuButton;
     private List<string> localSelectedTiles = new List<string>();
     public ReadOnlyCollection<string> selectedTiles { get { return localSelectedTiles.AsReadOnly(); } } // selectedTiles can be read but not modified outside this class
     private Toggle wallToggle, slabToggle;
-    private List<string> tileNames, wallTileNames, slabTileNames;
+    //private ReadOnlyCollection<string> tileNames, wallTileNames, slabTileNames;
+    private List<string> wallTileNames;
+    private string allTileNames;
 
     void OnEnable()
     {
@@ -22,9 +25,16 @@ public class PreselectionMenuScript : MonoBehaviour
         okButton = rootVisualElement.Q<Button>("ok-button");
         wallToggle = rootVisualElement.Q<Toggle>("wallToggle");
         slabToggle = rootVisualElement.Q<Toggle>("slabToggle");
+        showHideMenuButton = rootVisualElement.Q<Button>("show-hide-menu");
+        mainMenu = rootVisualElement.Q<VisualElement>("main-menu");
 
+        showHideMenuButton.clicked += ShowHidePreselectionMenu;
 
         var DBScript = GameObject.Find("Root").GetComponent<DBInteractions>();
+        
+
+        StartCoroutine(getAllTilesNames());
+
         /*
         tileNames = DBScript.ListAllTileNamesInDB();
         wallTileNames = DBScript.FilterWallsOnlyFromTileList(tileNames);
@@ -34,6 +44,30 @@ public class PreselectionMenuScript : MonoBehaviour
         wallToggle.RegisterCallback<ClickEvent>(ev => UpdateDisplay());
         slabToggle.RegisterCallback<ClickEvent>(ev => UpdateDisplay());
         */
+    }
+
+    IEnumerator getAllTilesNames()
+    {
+        var webScript = GameObject.Find("Root").GetComponent<Web>();
+        webScript.ListAllTileNamesInDB();
+        yield return null;
+        wallTileNames.Clear();
+        foreach (string item in webScript.allTileNames)
+        {
+            wallTileNames.Add(item);
+        }
+        yield return null;
+    }
+    void ShowHidePreselectionMenu()
+    {
+        if (mainMenu.style.display == DisplayStyle.Flex)
+        {
+            mainMenu.style.display = DisplayStyle.None;
+        }
+        else
+        {
+            mainMenu.style.display = DisplayStyle.Flex;
+        }
     }
     /*
     /// <summary>

@@ -10,9 +10,18 @@ using System.Collections.ObjectModel;
 public class Web : MonoBehaviour
 {
     private bool buildingTableCreated = false;
-
+    public string texturePath { get; set; }
     private List<string> localSelectedTiles = new List<string>();
+    private List<string> localTileNames = new List<string>();
     public ReadOnlyCollection<string> preselectedTiles { get { return localSelectedTiles.AsReadOnly(); } } // preselectedTiles can be read but not modified outside this class
+    public ReadOnlyCollection<string> allTileNames { get { return localTileNames.AsReadOnly(); } }
+
+    [Header("DATABASE")]
+    public string host;
+    public string database, username, password, tilesTable;
+    [Header("PROJECT DETAILS")]
+    public string clientId;
+    public string projectId;
 
     void Start()
     {
@@ -130,9 +139,7 @@ public class Web : MonoBehaviour
         form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
         form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
 
-        string[] phpReturnedList = { };
-        //List<string> preselectedTiles = new List<string>();
-        
+        string[] phpReturnedList = { };        
 
         using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/GetTilePreselection.php", form))
         {
@@ -148,22 +155,110 @@ public class Web : MonoBehaviour
             }
         }
 
-        List<string> presT = new List<string>(phpReturnedList);
         bool startRecordingResults = false;
 
         foreach (string item in phpReturnedList)
         {
             if (startRecordingResults)
             {
-                localSelectedTiles.Add(item);
+                localSelectedTiles.Add(item); // !!!! PROBLEM DOING THIS is that I need to wait for the coroutine to finish before "playing" with tis list in some other script
             }
             if (item.Contains("RETURNS"))
             {
                 startRecordingResults = true;
             }
         }
+        yield return localSelectedTiles;
+    }
 
-        //yield return preselectedTiles;
+    /// <summary>
+    /// Given a tile name ('libelle'), finds the path to its texture, which is located in the table 'chemin_texture' column.
+    /// For the moment this path is simply the name of the folder in which the textures are stored for a given tile.
+    /// </summary>
+    /// <param name="name">The name of the tile (i.e. the 'libelle').</param>
+    /// <returns>The path to the texture, as stored in the table.</returns>
+    IEnumerator GetTexturePathFromName(string name)
+    {
+        texturePath = null; // So that is is null as long as the DB request is not done.
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
+        form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
+        form.AddField("name", name);
+
+        string[] phpReturnedList = { };
+
+        using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/GetTexturePathFromName.php", form))
+        {
+            yield return www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                string receivedTilesString = www.downloadHandler.text;
+                phpReturnedList = receivedTilesString.Split(';');
+            }
+        }
+
+        List<string> texturePaths = new List<string>(phpReturnedList);
+        bool startRecordingResults = false;
+
+        foreach (string item in phpReturnedList)
+        {
+            if (startRecordingResults)
+            {
+                texturePaths.Add(item);
+            }
+            if (item.Contains("RETURNS"))
+            {
+                startRecordingResults = true;
+            }
+        }
+        texturePath = texturePaths[0];
+        yield return texturePath;
+
+        // TO DO: RETURN the path either via a class variable (but then I can't use it right after, because it might tke some time) or via callback??
+        // http://codesaying.com/action-callback-in-unity/
+        // https://forum.unity.com/threads/how-to-use-coroutines-and-callback-properly-retrieving-an-array-out-of-an-ienumerator.508017/
+    }
+
+    public void ListAllTileNamesInDB()
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("tilesTableName", tilesTable);
+
+        string[] phpReturnedList = { };
+
+        using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/ListAllTilesNamesInDB.php", form))
+        {
+            www.SendWebRequest();
+            //yield return www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                string receivedTilesString = www.downloadHandler.text;
+                phpReturnedList = receivedTilesString.Split(';');
+            }
+        }
+
+        bool startRecordingResults = false;
+
+        foreach (string item in phpReturnedList)
+        {
+            if (startRecordingResults)
+            {
+                localTileNames.Add(item);
+            }
+            if (item.Contains("RETURNS"))
+            {
+                startRecordingResults = true;
+            }
+        }
+        //yield return null;
     }
 
     IEnumerator ExecutePHPScript(string uri)

@@ -1,13 +1,34 @@
 using System.Collections;
-using System;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UIElements;
 
 public class MenusHandler : MonoBehaviour
 {
     public GameObject hitSurface = null;    // The surface clicked by the user.
     UnityEvent m_MyEvent = new UnityEvent();
     //private bool listenerSet = false;
+    private bool preselectionButtonOn = false;
+
+    private void Update()
+    {
+        //Wait for the building to be loaded, then show the preselection button
+        if (GameObject.Find("Root").transform.childCount > 0 && !preselectionButtonOn)
+        {
+            StartCoroutine(ShowPreselectionButton());
+            preselectionButtonOn = true;
+        }
+    }
+
+    IEnumerator ShowPreselectionButton()
+    {
+        yield return new WaitForSeconds(5);
+
+        GameObject preselectionUI = GameObject.Find("PreselectionMenu");
+        var rootVisualElement = preselectionUI.GetComponent<UIDocument>().rootVisualElement;
+        Button showHideMenu = rootVisualElement.Q<Button>("show-hide-menu");
+        showHideMenu.style.display = DisplayStyle.Flex;
+    }
 
     /*
     /// <summary>

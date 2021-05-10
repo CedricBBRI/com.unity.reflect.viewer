@@ -12,7 +12,7 @@ public class PreselectionMenuScript : MonoBehaviour
     public ReadOnlyCollection<string> selectedTiles { get { return localSelectedTiles.AsReadOnly(); } } // selectedTiles can be read but not modified outside this class
     private Toggle wallToggle, slabToggle;
     //private ReadOnlyCollection<string> tileNames, wallTileNames, slabTileNames;
-    private List<string> wallTileNames;
+    private List<string> tileNames, wallTileNames, slabTileNames;
     private string allTileNames;
 
     void OnEnable()
@@ -33,28 +33,51 @@ public class PreselectionMenuScript : MonoBehaviour
         var DBScript = GameObject.Find("Root").GetComponent<DBInteractions>();
         
 
-        StartCoroutine(getAllTilesNames());
+        StartCoroutine(getAllTilesNames());         //Finds all tiles in DB and store them in tileNames
+        StartCoroutine(getAllTilesNames("walls"));  //Finds all tiles in DB and store them in wallTileNames
+        StartCoroutine(getAllTilesNames("slabs"));  //Finds all tiles in DB and store them in slabTileNames
 
         /*
-        tileNames = DBScript.ListAllTileNamesInDB();
-        wallTileNames = DBScript.FilterWallsOnlyFromTileList(tileNames);
-        slabTileNames = DBScript.FilterSlabsOnlyFromTileList(tileNames);
-
         okButton.RegisterCallback<ClickEvent>(ev => GameObject.FindGameObjectWithTag("Player").GetComponent<DBInteractions>().ValidatePreSelection());
         wallToggle.RegisterCallback<ClickEvent>(ev => UpdateDisplay());
         slabToggle.RegisterCallback<ClickEvent>(ev => UpdateDisplay());
         */
     }
 
-    IEnumerator getAllTilesNames()
+    IEnumerator getAllTilesNames(string filter = "all")
     {
         var webScript = GameObject.Find("Root").GetComponent<Web>();
-        webScript.ListAllTileNamesInDB();
+        if (filter == "all")
+        {
+            tileNames.Clear();
+            webScript.ListAllTileNamesInDB("all");
+        }
+        else if (filter == "walls")
+        {
+            wallTileNames.Clear();
+            webScript.ListAllTileNamesInDB("walls");
+        }
+        else if (filter == "slabs")
+        {
+            slabTileNames.Clear();
+            webScript.ListAllTileNamesInDB("slabs");
+        }
         yield return null;
-        wallTileNames.Clear();
+
         foreach (string item in webScript.allTileNames)
         {
-            wallTileNames.Add(item);
+            switch (filter)
+            {
+                case "all":
+                    tileNames.Add(item);
+                    break;
+                case "walls":
+                    wallTileNames.Add(item);
+                    break;
+                case "slabs":
+                    slabTileNames.Add(item);
+                    break;
+            }
         }
         yield return null;
     }

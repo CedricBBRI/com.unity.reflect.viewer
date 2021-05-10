@@ -13,8 +13,12 @@ public class Web : MonoBehaviour
     public string texturePath { get; set; }
     private List<string> localSelectedTiles = new List<string>();
     private List<string> localTileNames = new List<string>();
+    private List<string> localWallTileNames = new List<string>();
+    private List<string> localSlabTileNames = new List<string>();
     public ReadOnlyCollection<string> preselectedTiles { get { return localSelectedTiles.AsReadOnly(); } } // preselectedTiles can be read but not modified outside this class
     public ReadOnlyCollection<string> allTileNames { get { return localTileNames.AsReadOnly(); } }
+    public ReadOnlyCollection<string> wallTileNames { get { return localWallTileNames.AsReadOnly(); } }
+    public ReadOnlyCollection<string> slabTileNames { get { return localSlabTileNames.AsReadOnly(); } }
 
     [Header("DATABASE")]
     public string host;
@@ -223,14 +227,34 @@ public class Web : MonoBehaviour
         // https://forum.unity.com/threads/how-to-use-coroutines-and-callback-properly-retrieving-an-array-out-of-an-ienumerator.508017/
     }
 
-    public void ListAllTileNamesInDB()
+    /// <summary>
+    /// Sends a WebRequest via PHP script to retrieve a list of the names of either all the tiles, or all the wall tiles, or all the slab tiles in the DB.
+    /// The class variables localTileNames, localWallTileNames, or localSlabTileNames are updated accordingly.
+    /// </summary>
+    /// <param name="filter">The (optional) filter to choose between all, walls, or slabs.</param>
+    public void ListAllTileNamesInDB(string filter = "all")
     {
         WWWForm form = new WWWForm();
         form.AddField("tilesTableName", tilesTable);
 
         string[] phpReturnedList = { };
+        string phpScript = "http://bimexpo/ListAllTilesNamesInDB.php";
+        switch (filter)
+        {
+            case "all":
+                localTileNames.Clear();
+                break;
+            case "walls":
+                phpScript = "http://bimexpo/ListAllWallTilesNamesInDB.php";
+                localWallTileNames.Clear();
+                break;
+            case "slabs":
+                phpScript = "http://bimexpo/ListAllSlabTilesNamesInDB.php";
+                localSlabTileNames.Clear();
+                break;
+        }
 
-        using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/ListAllTilesNamesInDB.php", form))
+        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
         {
             www.SendWebRequest();
             //yield return www.SendWebRequest();
@@ -251,15 +275,62 @@ public class Web : MonoBehaviour
         {
             if (startRecordingResults)
             {
-                localTileNames.Add(item);
+                switch (filter)
+                {
+                    case "all":
+                        localTileNames.Add(item);
+                        break;
+                    case "walls":
+                        localWallTileNames.Add(item);
+                        break;
+                    case "slabs":
+                        localSlabTileNames.Add(item);
+                        break;
+                }
+                
             }
             if (item.Contains("RETURNS"))
             {
                 startRecordingResults = true;
             }
         }
-        //yield return null;
     }
+
+    /*
+    /// <summary>
+    /// Given a list of tiles names (i.e. 'libelles'), retrieves only the ones that are suitable for walls, as a new list of libelles.
+    /// </summary>
+    /// <param name="list">A List of string that are the libelles to be filtered.</param>
+    /// <returns>The filtered List of libelles.</returns>
+    public List<string> FilterWallsOnlyFromTileList(List<string> list)
+    {
+        List<string> data = new List<string>();
+        List<string> filteredList = new List<string>();
+        try
+        {
+            Connect_DB();
+            MySqlCommand cmdSql = new MySqlCommand("SELECT `libelle` FROM `" + tilesTable + "` WHERE `mur`=1", con);
+            MySqlDataReader myReader = cmdSql.ExecuteReader();
+            while (myReader.Read())
+            {
+                data.Add(myReader["libelle"].ToString());
+            }
+            if (data == null)
+                Debug.Log("No compatible tiles found!");
+            myReader.Close();
+        }
+        catch (Exception ex)
+        {
+            Debug.Log("Error: " + ex.Message);
+        }
+        foreach (string item in list)
+        {
+            if (data.Contains(item))
+                filteredList.Add(item);
+        }
+        return filteredList;
+    }
+    */
 
     IEnumerator ExecutePHPScript(string uri)
     {

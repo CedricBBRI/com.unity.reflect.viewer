@@ -11,16 +11,16 @@ catch(Exception $e)
 	die('Error : ' . $e->getMessage());
 }
 
-$getName = "SELECT `libelle` FROM `" . $tilesTable . "` WHERE `libelle` IS NOT NULL";
+$getName = ("SELECT `libelle` FROM `" . $tilesTable . "` WHERE `mur`=1";
 $result = $bdd->query($getName);
 
 if ($result->errorCode() == 00000) 
 {
-  echo "Listing of all tiles names: OK\r\n";
+  echo "Listing of all wall tiles names: OK\r\n";
 } 
 else 
 {
-  echo "Error while listing the tiles names!\r\n";
+  echo "Error while listing the wall tiles names!\r\n";
 }
 
 if ($result->rowCount() > 0) {

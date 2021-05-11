@@ -424,7 +424,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05611712dc994f84086a0d5edff0ab3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wallTileNames: []
 --- !u!114 &399750834 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4035220525392314337, guid: f8e8bc7ff54f9df47a686cfa940a74cb,
@@ -1870,8 +1869,8 @@ MonoBehaviour:
   username: 
   password: 
   tilesTable: tptiles
-  clientId: 
-  projectId: 
+  clientId: 123456
+  projectId: 000001
 --- !u!114 &1405457562
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 public class Web : MonoBehaviour
 {
     private bool buildingTableCreated = false;
+    private bool preselectionDone = false;
     public string texturePath { get; set; }
     private List<string> localSelectedTiles = new List<string>();
     private List<string> localTileNames = new List<string>();
@@ -322,41 +323,32 @@ public class Web : MonoBehaviour
         return null;                                    // Return null if load failed
     }
 
-    /*
-    /// <summary>
-    /// Given a list of tiles names (i.e. 'libelles'), retrieves only the ones that are suitable for walls, as a new list of libelles.
-    /// </summary>
-    /// <param name="list">A List of string that are the libelles to be filtered.</param>
-    /// <returns>The filtered List of libelles.</returns>
-    public List<string> FilterWallsOnlyFromTileList(List<string> list)
+    public IEnumerator ValidatePreSelection()
     {
-        List<string> data = new List<string>();
-        List<string> filteredList = new List<string>();
-        try
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", clientId);
+        form.AddField("projectId", projectId);
+        foreach (string tile in GameObject.Find("PreselectionMenu").GetComponent<PreselectionMenuScript>().selectedTiles)
         {
-            Connect_DB();
-            MySqlCommand cmdSql = new MySqlCommand("SELECT `libelle` FROM `" + tilesTable + "` WHERE `mur`=1", con);
-            MySqlDataReader myReader = cmdSql.ExecuteReader();
-            while (myReader.Read())
+            form.AddField("preselectedTiles[]", tile);
+        }
+
+        using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/ValidatePreselections.php", form))
+        {
+            // Request and wait for the desired page.
+            yield return www.SendWebRequest();
+
+            if (www.result != UnityWebRequest.Result.Success)
             {
-                data.Add(myReader["libelle"].ToString());
+                Debug.Log(www.error);
             }
-            if (data == null)
-                Debug.Log("No compatible tiles found!");
-            myReader.Close();
+            else
+            {
+                Debug.Log(www.downloadHandler.text);
+            }
         }
-        catch (Exception ex)
-        {
-            Debug.Log("Error: " + ex.Message);
-        }
-        foreach (string item in list)
-        {
-            if (data.Contains(item))
-                filteredList.Add(item);
-        }
-        return filteredList;
+        preselectionDone = true;
     }
-    */
 
     IEnumerator ExecutePHPScript(string uri)
     {

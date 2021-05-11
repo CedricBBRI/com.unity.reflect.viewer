@@ -7,7 +7,6 @@ public class MenusHandler : MonoBehaviour
 {
     public GameObject hitSurface = null;    // The surface clicked by the user.
     UnityEvent m_MyEvent = new UnityEvent();
-    //private bool listenerSet = false;
     private bool preselectionButtonOn = false;
 
     private void Update()
@@ -31,28 +30,6 @@ public class MenusHandler : MonoBehaviour
     }
 
     /*
-    /// <summary>
-    /// Sets the Preselection Menu active, so that it appears on screen.
-    /// </summary>
-    public void ActivatePreselectionMenu()
-    {
-        try
-        {
-            GameObject.FindGameObjectWithTag("Player").GetComponent<DBInteractions>().Connect_DB();
-        }
-        catch
-        {
-            return;
-        }
-            
-        //Show preselection menu
-        GameObject[] allGO = Resources.FindObjectsOfTypeAll<GameObject>();
-        foreach (GameObject go in allGO)
-        {
-            if (go.name == "PreselectionMenu")
-                go.SetActive(true);
-        }
-    }
 
     // Update is called once per frame
     void Update()

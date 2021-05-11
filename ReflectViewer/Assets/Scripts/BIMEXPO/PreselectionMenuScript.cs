@@ -34,7 +34,11 @@ public class PreselectionMenuScript : MonoBehaviour
         showHideMenuButton = rootVisualElement.Q<Button>("show-hide-menu");
         mainMenu = rootVisualElement.Q<VisualElement>("main-menu");
 
+        // Register callbacks
+        var webScript = GameObject.Find("Root").GetComponent<Web>();
         showHideMenuButton.clicked += ShowHidePreselectionMenu;
+        okButton.RegisterCallback<ClickEvent>(ev => StartCoroutine(webScript.ValidatePreSelection()));
+        okButton.RegisterCallback<ClickEvent>(ev => ShowHidePreselectionMenu());
         wallToggle.RegisterCallback<ClickEvent>(ev => StartCoroutine(UpdateDisplay()));
         slabToggle.RegisterCallback<ClickEvent>(ev => StartCoroutine(UpdateDisplay()));
 
@@ -46,10 +50,6 @@ public class PreselectionMenuScript : MonoBehaviour
         StartCoroutine(getAllTilesNames());         //Finds all tiles in DB and store them in tileNames
         StartCoroutine(getAllTilesNames("walls"));  //Finds all tiles in DB and store them in wallTileNames
         StartCoroutine(getAllTilesNames("slabs"));  //Finds all tiles in DB and store them in slabTileNames
-
-        /*
-        okButton.RegisterCallback<ClickEvent>(ev => GameObject.FindGameObjectWithTag("Player").GetComponent<DBInteractions>().ValidatePreSelection());
-        */
     }
 
     IEnumerator getAllTilesNames(string filter = "all")

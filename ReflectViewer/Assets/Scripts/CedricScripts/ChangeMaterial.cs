@@ -6,16 +6,16 @@ namespace UnityEngine.Reflect
 {
     public class ChangeMaterial : MonoBehaviour
     {
-        public Toggle toggle; //Initially 'on' toggle, defines if material replacement can happen
+        //public Toggle toggle; //Initially 'on' toggle, defines if material replacement can happen
         public Text showText; //Empty text file, shows name of selected object
         public GameObject selectedObject; //Leave empty, gets populated
 
         Material newMaterialCopy;
         public Image newMaterialCopyImage; //Just create a new empty Image, this is to show current material? It's bugged I think
 
-        public Text floatName; //Empty text
+        //public Text floatName; //Empty text
         public Camera mainCam; //This has to be linked to the main camera of the player
-        public float[] floatNameOffset; //[x, y, z] offset of image selection name, can be [0,0,0]
+        //public float[] floatNameOffset; //[x, y, z] offset of image selection name, can be [0,0,0]
         public float[] floatImgOffset; //[x,y,z] offset of image selection images, can be [0,0,0]
         private Vector3 hitPoint;
 
@@ -34,6 +34,8 @@ namespace UnityEngine.Reflect
         public GameObject replacementTest; //Gameobject to be used to replace objects, currently unused
 
         public bool functionReplaceCalled; //Exists only to give to FaceMerging script
+
+        public Material testMat;
 
         // Start is called before the first frame update
         void Start() //Initializes time, root, the images for the right click menu...
@@ -67,7 +69,7 @@ namespace UnityEngine.Reflect
         // Update is called once per frame
         void Update() //Show and move the possible tile choices on screen and check for inputs
         {
-            if (toggle.isOn)
+            if (true) //if material replacement can happen
             {
                 if (selectedObject != null)
                 {
@@ -80,24 +82,22 @@ namespace UnityEngine.Reflect
                 if ((Input.GetMouseButtonUp(1) && Time.time - timeClick < 0.3f) || (Input.touchCount > 2 && Input.touches[2].phase == TouchPhase.Began)) //checks for a fast right click
                 {
                     selectedObject = ClickObjects();
-                    var selectedMeta = selectedObject.GetComponent<Metadata>();
                     showText.text = selectedObject.name;
                     newMaterialCopy = new Material(selectedObject.GetComponent<Renderer>().material);
                     newMaterialCopy.shader = Shader.Find("Unlit/Texture");
                     newMaterialCopyImage.material = newMaterialCopy;
 
+                    ChangeMaterialClick(testMat, selectedObject);
 
                 }
                 if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.LeftControl)) //right click and ctrl
                 {
                     selectedObject = ClickObjects();
-                    //ReplaceObject();
                 }
                 if ((Input.touchCount > 2 && Input.touches[2].phase == TouchPhase.Began)) //triple touch
                 {
                     selectedObject = ClickObjects();
                     Debug.Log(selectedObject.name);
-                    var selectedMeta = selectedObject.GetComponent<Metadata>();
                     showText.text = selectedObject.name;// + " with cost: " + selectedCostString;
                     newMaterialCopy = new Material(selectedObject.GetComponent<Renderer>().material);
                     newMaterialCopy.shader = Shader.Find("Unlit/Texture");
@@ -164,14 +164,14 @@ namespace UnityEngine.Reflect
             float[] mortarWidthArray = { 0.01f, 0.03f, 0.1f };//Possible choices of mortar widths in meters, defined hear because it was fast and easy...
             foreach (Texture tex in texPoss) //Generate a tile material for every possible texture that doesn't have one yet
             {
-                Material tempMat = new Material(Shader.Find("Custom/TileShader"));
-                tempMat.mainTexture = tex;
-                tempMat.SetFloat("_MortarSize", mortarWidthArray[mortarSizeDrop.value]);
-                matPoss.Add(tempMat);
+                //Material tempMat = new Material(Shader.Find("Custom/TileShader"));
+                //tempMat.mainTexture = tex;
+                //tempMat.SetFloat("_MortarSize", mortarWidthArray[mortarSizeDrop.value]);
+                //matPoss.Add(tempMat);
             }
             if (draw >= 1)//Draws the materials on screen
             {
-                for (int i = 0; i < materialImages.Count(); i++)
+                for (int i = 0; i < materialImages.Count()+5; i++)
                 {
                     materialImages[i].transform.position = new Vector3(0f, -10000f, 0f);
                 }

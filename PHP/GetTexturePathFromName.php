@@ -32,7 +32,7 @@ if ($result->rowCount() > 0) {
 
 // output data of each row
 while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-    echo ";" . $row['chemin_texture'] . "\r\n";
+    echo ";" . $row['chemin_texture'];
 } 
 
 //Close the query access

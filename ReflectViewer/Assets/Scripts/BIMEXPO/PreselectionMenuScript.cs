@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Collections;
+using System.IO;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections.ObjectModel;
@@ -14,11 +16,15 @@ public class PreselectionMenuScript : MonoBehaviour
     //private ReadOnlyCollection<string> tileNames, wallTileNames, slabTileNames;
     private List<string> tileNames, wallTileNames, slabTileNames;
     private string allTileNames;
+    private string tilePicturesFolder = "";
 
     void OnEnable()
     {
         //Disable player camera rotation until the preselection is made
         //GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>() = false;
+
+        string currentDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        tilePicturesFolder = Directory.GetParent(currentDir).Parent.Parent.FullName + "\\pictures_carrelages\\";
 
         var rootVisualElement = GetComponent<UIDocument>().rootVisualElement;
         myBox = rootVisualElement.Q<VisualElement>("img-container");
@@ -29,18 +35,20 @@ public class PreselectionMenuScript : MonoBehaviour
         mainMenu = rootVisualElement.Q<VisualElement>("main-menu");
 
         showHideMenuButton.clicked += ShowHidePreselectionMenu;
+        wallToggle.RegisterCallback<ClickEvent>(ev => StartCoroutine(UpdateDisplay()));
+        slabToggle.RegisterCallback<ClickEvent>(ev => StartCoroutine(UpdateDisplay()));
 
         var DBScript = GameObject.Find("Root").GetComponent<DBInteractions>();
-        
 
+        tileNames = new List<string>();
+        wallTileNames = new List<string>();
+        slabTileNames = new List<string>();
         StartCoroutine(getAllTilesNames());         //Finds all tiles in DB and store them in tileNames
         StartCoroutine(getAllTilesNames("walls"));  //Finds all tiles in DB and store them in wallTileNames
         StartCoroutine(getAllTilesNames("slabs"));  //Finds all tiles in DB and store them in slabTileNames
 
         /*
         okButton.RegisterCallback<ClickEvent>(ev => GameObject.FindGameObjectWithTag("Player").GetComponent<DBInteractions>().ValidatePreSelection());
-        wallToggle.RegisterCallback<ClickEvent>(ev => UpdateDisplay());
-        slabToggle.RegisterCallback<ClickEvent>(ev => UpdateDisplay());
         */
     }
 
@@ -50,35 +58,31 @@ public class PreselectionMenuScript : MonoBehaviour
         if (filter == "all")
         {
             tileNames.Clear();
-            webScript.ListAllTileNamesInDB("all");
+            yield return StartCoroutine(webScript.ListAllTileNamesInDB("all"));
+            foreach (string item in webScript.allTileNames)
+            {
+                tileNames.Add(item);
+            }
         }
         else if (filter == "walls")
         {
             wallTileNames.Clear();
-            webScript.ListAllTileNamesInDB("walls");
+            yield return StartCoroutine(webScript.ListAllTileNamesInDB("walls"));
+            foreach (string item in webScript.wallTileNames)
+            {
+                wallTileNames.Add(item);
+            }
         }
         else if (filter == "slabs")
         {
             slabTileNames.Clear();
-            webScript.ListAllTileNamesInDB("slabs");
-        }
-        yield return null;
-
-        foreach (string item in webScript.allTileNames)
-        {
-            switch (filter)
+            yield return StartCoroutine(webScript.ListAllTileNamesInDB("slabs"));
+            foreach (string item in webScript.slabTileNames)
             {
-                case "all":
-                    tileNames.Add(item);
-                    break;
-                case "walls":
-                    wallTileNames.Add(item);
-                    break;
-                case "slabs":
-                    slabTileNames.Add(item);
-                    break;
+                slabTileNames.Add(item);
             }
         }
+
         yield return null;
     }
     void ShowHidePreselectionMenu()
@@ -92,11 +96,11 @@ public class PreselectionMenuScript : MonoBehaviour
             mainMenu.style.display = DisplayStyle.Flex;
         }
     }
-    /*
+    
     /// <summary>
     /// Based on the menu's checkboxes, shows or hide the tiles applicable to walls or slabs.
     /// </summary>
-    void UpdateDisplay()
+    IEnumerator UpdateDisplay()
     {
         List<VisualElement> veToRemove = new List<VisualElement>();
         foreach (VisualElement ve in myBox.Children())
@@ -108,19 +112,21 @@ public class PreselectionMenuScript : MonoBehaviour
             myBox.Remove(ve);
         }
 
-        var DBScript = GameObject.Find("FirstPersonController").GetComponent<DBInteractions>();
+        var webScript = GameObject.Find("Root").GetComponent<Web>();
         if (wallToggle.value == true)
         {
             foreach (string tileName in wallTileNames)
             {
                 string texturePath;
-                texturePath = DBScript.GetTexturePathFromName(tileName);
+                yield return StartCoroutine(webScript.GetTexturePathFromName(tileName));
+                texturePath = webScript.texturePath;
+                //texturePath = webScript.GetTexturePathFromName(tileName);
                 var myVE = new VisualElement();
 
                 myVE.styleSheets.Add(Resources.Load<StyleSheet>("USS/testVE"));
                 myVE.AddToClassList("medaillon");
                 myVE.name = tileName;
-                myVE.style.backgroundImage = DBScript.LoadTextureFromDisk(@"c:\users\aca\Documents\Projects\BIMEXPO\pictures_carrelages\" + texturePath);
+                myVE.style.backgroundImage = webScript.LoadTextureFromDisk(tilePicturesFolder + texturePath);
                 myBox.Add(myVE);
 
                 myVE.RegisterCallback<ClickEvent>(ev => UpdateSelection(tileName));
@@ -131,13 +137,15 @@ public class PreselectionMenuScript : MonoBehaviour
             foreach (string tileName in slabTileNames)
             {
                 string texturePath;
-                texturePath = DBScript.GetTexturePathFromName(tileName);
+                yield return StartCoroutine(webScript.GetTexturePathFromName(tileName));
+                texturePath = webScript.texturePath;
+
                 var myVE = new VisualElement();
 
                 myVE.styleSheets.Add(Resources.Load<StyleSheet>("USS/testVE"));
                 myVE.AddToClassList("medaillon");
                 myVE.name = tileName;
-                myVE.style.backgroundImage = DBScript.LoadTextureFromDisk(@"c:\users\aca\Documents\Projects\BIMEXPO\pictures_carrelages\" + texturePath);
+                myVE.style.backgroundImage = webScript.LoadTextureFromDisk(tilePicturesFolder + texturePath);
                 myBox.Add(myVE);
 
                 myVE.RegisterCallback<ClickEvent>(ev => UpdateSelection(tileName));
@@ -193,5 +201,4 @@ public class PreselectionMenuScript : MonoBehaviour
         }
             
     }
-    */
 }

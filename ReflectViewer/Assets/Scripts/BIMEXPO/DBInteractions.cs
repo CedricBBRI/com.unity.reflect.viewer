@@ -93,32 +93,6 @@ public class DBInteractions : MonoBehaviour
         //StartCoroutine(GetTextureFromPC(url,obj));
     }
 
-    public Texture2D LoadTextureFromDisk(string FilePath)
-    {
-        // Load a PNG or JPG file from disk to a Texture2D
-        // Returns null if load fails
-        Texture2D Tex2D;
-        byte[] FileData;
-        string[] filesInDir;
-
-        //Files in the directory
-        filesInDir = Directory.GetFiles(FilePath);
-
-        //Get the 1st image within directory
-        string picture = filesInDir[0];
-
-        if (File.Exists(picture))
-        {
-            Debug.Log("File exists!");
-            FileData = File.ReadAllBytes(picture);
-            Tex2D = new Texture2D(2, 2);                // Create new "empty" texture
-            if (Tex2D.LoadImage(FileData))              // Load the imagedata into the texture (size is set automatically)
-                return Tex2D;                           // If data = readable -> return texture
-        }
-        Debug.Log("File doesn't exist!");
-        return null;                                    // Return null if load failed
-    }
-
     /// <summary>
     /// Function <c>ListAllTileNamesInDB</c> lists all the tiles names ('libelle') present in the tiles table in the DB.
     /// </summary>

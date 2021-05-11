@@ -11,7 +11,7 @@ catch(Exception $e)
 	die('Error : ' . $e->getMessage());
 }
 
-$getName = ("SELECT `libelle` FROM `" . $tilesTable . "` WHERE `mur`=1";
+$getName = "SELECT `libelle` FROM `" . $tilesTable . "` WHERE `mur`=1";
 $result = $bdd->query($getName);
 
 if ($result->errorCode() == 00000) 
@@ -29,7 +29,7 @@ if ($result->rowCount() > 0) {
 
 // output data of each row
 while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-    echo ";" . $row['libelle'] . "\r\n";
+    echo ";" . $row['libelle'];
 } 
 
 //Close the query access

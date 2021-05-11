@@ -181,7 +181,7 @@ public class Web : MonoBehaviour
     /// </summary>
     /// <param name="name">The name of the tile (i.e. the 'libelle').</param>
     /// <returns>The path to the texture, as stored in the table.</returns>
-    IEnumerator GetTexturePathFromName(string name)
+    public IEnumerator GetTexturePathFromName(string name)
     {
         texturePath = null; // So that is is null as long as the DB request is not done.
         WWWForm form = new WWWForm();
@@ -205,7 +205,7 @@ public class Web : MonoBehaviour
             }
         }
 
-        List<string> texturePaths = new List<string>(phpReturnedList);
+        List<string> texturePaths = new List<string>();
         bool startRecordingResults = false;
 
         foreach (string item in phpReturnedList)
@@ -220,7 +220,7 @@ public class Web : MonoBehaviour
             }
         }
         texturePath = texturePaths[0];
-        yield return texturePath;
+        //yield return null;
 
         // TO DO: RETURN the path either via a class variable (but then I can't use it right after, because it might tke some time) or via callback??
         // http://codesaying.com/action-callback-in-unity/
@@ -232,7 +232,7 @@ public class Web : MonoBehaviour
     /// The class variables localTileNames, localWallTileNames, or localSlabTileNames are updated accordingly.
     /// </summary>
     /// <param name="filter">The (optional) filter to choose between all, walls, or slabs.</param>
-    public void ListAllTileNamesInDB(string filter = "all")
+    public IEnumerator ListAllTileNamesInDB(string filter = "all")
     {
         WWWForm form = new WWWForm();
         form.AddField("tilesTableName", tilesTable);
@@ -256,8 +256,8 @@ public class Web : MonoBehaviour
 
         using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
         {
-            www.SendWebRequest();
-            //yield return www.SendWebRequest();
+            yield return www.SendWebRequest();
+            
             if (www.result != UnityWebRequest.Result.Success)
             {
                 Debug.Log(www.error);
@@ -294,6 +294,32 @@ public class Web : MonoBehaviour
                 startRecordingResults = true;
             }
         }
+    }
+
+    public Texture2D LoadTextureFromDisk(string FilePath)
+    {
+        // Load a PNG or JPG file from disk to a Texture2D
+        // Returns null if load fails
+        Texture2D Tex2D;
+        byte[] FileData;
+        string[] filesInDir;
+
+        //Files in the directory
+        filesInDir = Directory.GetFiles(FilePath);
+
+        //Get the 1st image within directory
+        string picture = filesInDir[0];
+
+        if (File.Exists(picture))
+        {
+            Debug.Log("File exists!");
+            FileData = File.ReadAllBytes(picture);
+            Tex2D = new Texture2D(2, 2);                // Create new "empty" texture
+            if (Tex2D.LoadImage(FileData))              // Load the imagedata into the texture (size is set automatically)
+                return Tex2D;                           // If data = readable -> return texture
+        }
+        Debug.Log("File doesn't exist!");
+        return null;                                    // Return null if load failed
     }
 
     /*

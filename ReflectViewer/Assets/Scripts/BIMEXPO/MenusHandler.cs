@@ -17,6 +17,51 @@ public class MenusHandler : MonoBehaviour
             StartCoroutine(ShowPreselectionButton());
             preselectionButtonOn = true;
         }
+
+        bool preselectionDone = GameObject.Find("Root").GetComponent<Web>().preselectionDone;
+        // Watch out for user click in order to assign a material to a surface
+
+        // ---------------------------------------------------------------------------------------------------------------------------
+        // 12/05/2021 - AC: This code will be merged with Cedric's. I comment thus this part that is supposed to bring the tiles menu.
+        // ---------------------------------------------------------------------------------------------------------------------------
+
+        /*
+        if (Input.GetMouseButtonDown(1) && preselectionDone)
+        {
+            RaycastHit hit; // Infos about the hit
+
+            //Filter walls and slabs only
+            int layerMask = LayerMask.GetMask("Default");
+
+            //Shoot the ray towards the mouse position
+            Ray rayToMouse = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            // Does the ray intersect any objects excluding the player layer
+            if (Physics.Raycast(rayToMouse, out hit, Mathf.Infinity, layerMask))
+            {
+                hitSurface = hit.collider.gameObject;
+                //HighlightSurface(hitSurface);
+                ActivateTilesChoiceMenu();
+
+                //Adding event listener so that if user clicks middle button when surface is selected, comment box appears
+                //m_MyEvent.AddListener(ActivateCommentMenu);
+            }
+            else
+            {
+                Debug.Log("No hit");
+                m_MyEvent.RemoveAllListeners();
+            }
+        }
+        else if (Input.GetMouseButtonDown(1) && !preselectionDone)
+        {
+            Debug.LogWarning("La présélection des carrelages n'a pas encore été faite!");
+        }
+        if (Input.GetMouseButtonDown(2) && m_MyEvent != null)
+        {
+            //Begin the action
+            m_MyEvent.Invoke();
+        }
+        */
     }
 
     IEnumerator ShowPreselectionButton()
@@ -27,45 +72,6 @@ public class MenusHandler : MonoBehaviour
         var rootVisualElement = preselectionUI.GetComponent<UIDocument>().rootVisualElement;
         Button showHideMenu = rootVisualElement.Q<Button>("show-hide-menu");
         showHideMenu.style.display = DisplayStyle.Flex;
-    }
-
-    /*
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (Input.GetMouseButtonDown(1))
-        {
-            RaycastHit hit; // Infos about the hit
-
-            //Filter walls and slabs only
-            int layerMask = LayerMask.GetMask("Walls", "Slabs");
-
-            //Shoot the ray towards the mouse position
-            Ray rayToMouse = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            // Does the ray intersect any objects excluding the player layer
-            if (Physics.Raycast(rayToMouse, out hit, Mathf.Infinity, layerMask))
-            {
-                hitSurface = hit.collider.gameObject;
-                HighlightSurface(hitSurface);
-                ActivateTilesChoiceMenu();
-
-                //Adding event listener so that if user clicks middle button when surface is selected, comment box appears
-                m_MyEvent.AddListener(ActivateCommentMenu);
-                //listenerSet = true;
-            }
-            else
-            {
-                Debug.Log("No hit");
-                m_MyEvent.RemoveAllListeners();
-            }
-        }
-        if (Input.GetMouseButtonDown(2) && m_MyEvent != null)
-        {
-            //Begin the action
-            m_MyEvent.Invoke();
-        }
     }
 
     /// <summary>
@@ -80,7 +86,7 @@ public class MenusHandler : MonoBehaviour
             if (go.name == "TileChoiceMenu")
             {
                 //Disable player camera rotation until the preselection is made
-                GameObject.FindGameObjectWithTag("Player").GetComponent<FirstPersonController>().cameraCanMove = false;
+                //GameObject.FindGameObjectWithTag("Player").GetComponent<FirstPersonController>().cameraCanMove = false;
 
                 //Show menu
                 go.SetActive(true);
@@ -89,6 +95,7 @@ public class MenusHandler : MonoBehaviour
             }
         }
     }
+    /*
 
     void HighlightSurface(GameObject surf)
     {

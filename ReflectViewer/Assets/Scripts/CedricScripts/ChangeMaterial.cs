@@ -73,7 +73,7 @@ namespace UnityEngine.Reflect
             {
                 if (selectedObject != null)
                 {
-                    matPoss = CreateUINew(selectedObject, 1);
+                    //matPoss = CreateUINew(selectedObject, 1);
                 }
                 if (Input.GetMouseButtonDown(1)) //right click, this is done for timing reasons
                 {

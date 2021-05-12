@@ -38,82 +38,86 @@ public class FaceMerging : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         selectedObject = changeMatScript.selectedObject;
-        var test = selectedObject.GetComponent<Metadata>().GetParameter("Area");
-        double curArrea = 0.0;
-        if (test.Split()[0].Length > 0)
+        if (selectedObject != null && selectedObject.GetComponent<Metadata>() != null)
         {
-            curArrea = double.Parse(test.Split()[0], System.Globalization.CultureInfo.InvariantCulture);
-        }
-        namePoss = new List<string>();
-        curCost1 = 0.0;
-        totArea1 = 0.0;
-        if (listCustom.Count >= 1) //If the current merged list is not empty
-        {
-            foreach (GameObject go in listCustom)
+            string test = selectedObject.GetComponent<Metadata>().GetParameter("Area");
+            double curArrea = 0.0;
+            if (test.Split()[0].Length > 0)
             {
-                matPoss = changeMatScript.CreateUINew(go, 0); //Get the possible materials from changeMatScript
-                if (matPoss.Count >= 1)
+                curArrea = double.Parse(test.Split()[0], System.Globalization.CultureInfo.InvariantCulture);
+            }
+            namePoss = new List<string>();
+            curCost1 = 0.0;
+            totArea1 = 0.0;
+            if (listCustom.Count >= 1) //If the current merged list is not empty
+            {
+                foreach (GameObject go in listCustom)
                 {
-                    foreach (Material mat in matPoss)
+                    matPoss = changeMatScript.CreateUINew(go, 0); //Get the possible materials from changeMatScript
+                    if (matPoss.Count >= 1)
                     {
-                        namePoss.Add(mat.name);
-                        namePoss.Add(mat.name + " (Instance)");
+                        foreach (Material mat in matPoss)
+                        {
+                            namePoss.Add(mat.name);
+                            namePoss.Add(mat.name + " (Instance)");
+                        }
+                        if (namePoss.Contains(go.GetComponent<MeshRenderer>().sharedMaterial.name))
+                        {
+                            curCost1 += double.Parse(go.GetComponent<Metadata>().GetParameter("Area").Split()[0], System.Globalization.CultureInfo.InvariantCulture) * 20.0;
+                        }
                     }
-                    if (namePoss.Contains(go.GetComponent<MeshRenderer>().sharedMaterial.name))
-                    { 
-                        curCost1 += double.Parse(go.GetComponent<Metadata>().GetParameter("Area").Split()[0], System.Globalization.CultureInfo.InvariantCulture) * 20.0;
-                    }
+                    test = go.GetComponent<Metadata>().GetParameter("Area");
+                    totArea1 += double.Parse(test.Split()[0], System.Globalization.CultureInfo.InvariantCulture);
                 }
-                test = go.GetComponent<Metadata>().GetParameter("Area");
-                totArea1 += double.Parse(test.Split()[0], System.Globalization.CultureInfo.InvariantCulture);
             }
-        }
-        textCosts.text = "Area is " + curArrea.ToString() + "\nThe price of scenario " + curScenario1 + " is " + curCost1.ToString() + "\nSelected area is " + totArea1;// + "\nThe price of scenario " + curScenario2 + " is " + curCost2.ToString() + "\nSelected area is " + totArea2 + "\nTotal area: " + (totArea1 + totArea2) +"\nTotal cost: " + (curCost1 + curCost2).ToString();
-        //Generates script of costs
-        if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftAlt)) //right click and ctrl and alt; ADD NEW CUSTOMLIST!!!
-        {
-            Debug.Log("ctrl alt");
-            listOfListCustom.Add(new List<GameObject>());
-            curList = listOfListCustom.Count-1;
-            listOfListCustom[curList].Add(selectedObject);
-        }
-        else if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.LeftControl)) //right click and ctrl, ADD TO OR REMOVE FROM CUSTOMLIST
-        {
-            if (!listOfListCustom[curList].Contains(selectedObject)) //If current list doesn't dontain the object, add it
+            textCosts.text = "Area is " + curArrea.ToString() + "\nThe price of scenario " + curScenario1 + " is " + curCost1.ToString() + "\nSelected area is " + totArea1;// + "\nThe price of scenario " + curScenario2 + " is " + curCost2.ToString() + "\nSelected area is " + totArea2 + "\nTotal area: " + (totArea1 + totArea2) +"\nTotal cost: " + (curCost1 + curCost2).ToString();
+                                                                                                                                                                            //Generates script of costs
+            if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftAlt)) //right click and ctrl and alt; ADD NEW CUSTOMLIST!!!
             {
+                Debug.Log("ctrl alt");
+                listOfListCustom.Add(new List<GameObject>());
+                curList = listOfListCustom.Count - 1;
                 listOfListCustom[curList].Add(selectedObject);
-                foreach (GameObject go in listOfListCustom[curList])
-                {
-                    changeMatScript.ChangeMaterialClick(defMat, go);
-                }
             }
-            for (int i = 0; i < listOfListCustom.Count; i++) //Remove it in any other list
+            else if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.LeftControl)) //right click and ctrl, ADD TO OR REMOVE FROM CUSTOMLIST
             {
-                if (listOfListCustom[i].Contains(selectedObject))
+                if (!listOfListCustom[curList].Contains(selectedObject)) //If current list doesn't dontain the object, add it
                 {
-                    listOfListCustom[i].Remove(selectedObject);
-                    foreach (GameObject go in listOfListCustom[i])
+                    listOfListCustom[curList].Add(selectedObject);
+                    foreach (GameObject go in listOfListCustom[curList])
                     {
                         changeMatScript.ChangeMaterialClick(defMat, go);
                     }
                 }
-            }
-        }   
-        
-        if(changeMatScript.functionReplaceCalled == true) //When the function to replace a material is called anywhere, check if the object is part of any merge list and if so change materials on all of them
-        {
-            for (int i = 0; i < listOfListCustom.Count; i++)
-            {
-                if (listOfListCustom[i].Contains(selectedObject))
+                for (int i = 0; i < listOfListCustom.Count; i++) //Remove it in any other list
                 {
-                    foreach (GameObject go in listOfListCustom[i])
+                    if (listOfListCustom[i].Contains(selectedObject))
                     {
-                        changeMatScript.ChangeMaterialClick(selectedObject.GetComponent<Renderer>().material, go);
+                        listOfListCustom[i].Remove(selectedObject);
+                        foreach (GameObject go in listOfListCustom[i])
+                        {
+                            changeMatScript.ChangeMaterialClick(defMat, go);
+                        }
                     }
                 }
             }
-            changeMatScript.functionReplaceCalled = false;
+
+            if (changeMatScript.functionReplaceCalled == true) //When the function to replace a material is called anywhere, check if the object is part of any merge list and if so change materials on all of them
+            {
+                for (int i = 0; i < listOfListCustom.Count; i++)
+                {
+                    if (listOfListCustom[i].Contains(selectedObject))
+                    {
+                        foreach (GameObject go in listOfListCustom[i])
+                        {
+                            changeMatScript.ChangeMaterialClick(selectedObject.GetComponent<Renderer>().material, go);
+                        }
+                    }
+                }
+                changeMatScript.functionReplaceCalled = false;
+            }
         }
     }
 

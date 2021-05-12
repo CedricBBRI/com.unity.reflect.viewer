@@ -27,7 +27,7 @@ if ($result->rowCount() > 0) {
 
 // output data of each row
 while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-    echo ";" . $row['libelle'] . "\r\n";
+    echo ";" . $row['libelle'];
 } 
 
 //Close the query access

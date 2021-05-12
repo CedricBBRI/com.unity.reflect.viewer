@@ -10,13 +10,18 @@ using System.Collections.ObjectModel;
 public class Web : MonoBehaviour
 {
     private bool buildingTableCreated = false;
-    private bool preselectionDone = false;
+    private bool localPreselectionDone = false;
+    public bool preselectionDone { get { return localPreselectionDone; } }
     public string texturePath { get; set; }
     private List<string> localSelectedTiles = new List<string>();
+    private List<string> localWallSelectedTiles = new List<string>();
+    private List<string> localSlabSelectedTiles = new List<string>();
     private List<string> localTileNames = new List<string>();
     private List<string> localWallTileNames = new List<string>();
     private List<string> localSlabTileNames = new List<string>();
     public ReadOnlyCollection<string> preselectedTiles { get { return localSelectedTiles.AsReadOnly(); } } // preselectedTiles can be read but not modified outside this class
+    public ReadOnlyCollection<string> wallPreselectedTiles { get { return localWallSelectedTiles.AsReadOnly(); } }
+    public ReadOnlyCollection<string> slabPreselectedTiles { get { return localSlabSelectedTiles.AsReadOnly(); } }
     public ReadOnlyCollection<string> allTileNames { get { return localTileNames.AsReadOnly(); } }
     public ReadOnlyCollection<string> wallTileNames { get { return localWallTileNames.AsReadOnly(); } }
     public ReadOnlyCollection<string> slabTileNames { get { return localSlabTileNames.AsReadOnly(); } }
@@ -136,19 +141,21 @@ public class Web : MonoBehaviour
     /// <summary>
     /// Gets the list of the names ('libelles') of all the preselected tiles in the project.
     /// </summary>
-    IEnumerator RetrievePreselectedTiles()
+    //public IEnumerator RetrievePreselectedTiles()
+    public void RetrievePreselectedTiles(string category = "all")
     {
-        yield return new WaitForSeconds(10); // If this function is called immediately after CreateTableFromCSV, it needs some time for the table to actually be created
+        //yield return new WaitForSeconds(10); // If this function is called immediately after CreateTableFromCSV, it needs some time for the table to actually be created
 
         WWWForm form = new WWWForm();
         form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
         form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
+        form.AddField("category", category);
 
         string[] phpReturnedList = { };        
 
         using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/GetTilePreselection.php", form))
         {
-            yield return www.SendWebRequest();
+            www.SendWebRequest();
             if (www.result != UnityWebRequest.Result.Success)
             {
                 Debug.Log(www.error);
@@ -166,14 +173,66 @@ public class Web : MonoBehaviour
         {
             if (startRecordingResults)
             {
-                localSelectedTiles.Add(item); // !!!! PROBLEM DOING THIS is that I need to wait for the coroutine to finish before "playing" with tis list in some other script
+                switch (category)
+                {
+                    case "all":
+                        localSelectedTiles.Add(item);
+                        break;
+                    case "walls":
+                        localWallSelectedTiles.Add(item);
+                        break;
+                    case "slabs":
+                        localSlabSelectedTiles.Add(item);
+                        break;
+                }
+                
             }
             if (item.Contains("RETURNS"))
             {
                 startRecordingResults = true;
             }
         }
-        yield return localSelectedTiles;
+    }
+
+    public string GetTexturePathFromNameM(string name)
+    {
+        texturePath = null; // So that is is null as long as the DB request is not done.
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
+        form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
+        form.AddField("name", name);
+
+        string[] phpReturnedList = { };
+
+        using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/GetTexturePathFromName.php", form))
+        {
+            www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                string receivedTilesString = www.downloadHandler.text;
+                phpReturnedList = receivedTilesString.Split(';');
+            }
+        }
+
+        List<string> texturePaths = new List<string>();
+        bool startRecordingResults = false;
+
+        foreach (string item in phpReturnedList)
+        {
+            if (startRecordingResults)
+            {
+                texturePaths.Add(item);
+            }
+            if (item.Contains("RETURNS"))
+            {
+                startRecordingResults = true;
+            }
+        }
+        return texturePaths[0];
     }
 
     /// <summary>
@@ -347,35 +406,7 @@ public class Web : MonoBehaviour
                 Debug.Log(www.downloadHandler.text);
             }
         }
-        preselectionDone = true;
+        localPreselectionDone = true;
     }
 
-    IEnumerator ExecutePHPScript(string uri)
-    {
-        using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
-        {
-            
-
-            // Request and wait for the desired page.
-            yield return webRequest.SendWebRequest();
-
-            string[] pages = uri.Split('/');
-            int page = pages.Length - 1;
-
-            switch (webRequest.result)
-            {
-                case UnityWebRequest.Result.ConnectionError:
-                case UnityWebRequest.Result.DataProcessingError:
-                    Debug.LogError(pages[page] + ": Error: " + webRequest.error);
-                    break;
-                case UnityWebRequest.Result.ProtocolError:
-                    Debug.LogError(pages[page] + ": HTTP Error: " + webRequest.error);
-                    break;
-                case UnityWebRequest.Result.Success:
-                    Debug.Log(pages[page] + ":\nReceived: " + webRequest.downloadHandler.text);
-                    Debug.Log(webRequest.downloadHandler.text);
-                    break;
-            }
-        }
-    }
 }

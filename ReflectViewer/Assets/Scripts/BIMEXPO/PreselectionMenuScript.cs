@@ -9,7 +9,7 @@ using System.Collections.ObjectModel;
 public class PreselectionMenuScript : MonoBehaviour
 {
     private VisualElement myBox, mainMenu;
-    private Button okButton, showHideMenuButton;
+    private Button okButton, showHideMenuButton, produceAmendmentButton;
     private List<string> localSelectedTiles = new List<string>();
     public ReadOnlyCollection<string> selectedTiles { get { return localSelectedTiles.AsReadOnly(); } } // selectedTiles can be read but not modified outside this class
     private Toggle wallToggle, slabToggle;
@@ -34,6 +34,9 @@ public class PreselectionMenuScript : MonoBehaviour
         showHideMenuButton = rootVisualElement.Q<Button>("show-hide-menu");
         mainMenu = rootVisualElement.Q<VisualElement>("main-menu");
 
+        // Also handling the amendment production from this menu
+        produceAmendmentButton = rootVisualElement.Q<Button>("produce-amendment");
+
         // Register callbacks
         var webScript = GameObject.Find("Root").GetComponent<Web>();
         showHideMenuButton.clicked += ShowHidePreselectionMenu;
@@ -41,6 +44,7 @@ public class PreselectionMenuScript : MonoBehaviour
         okButton.RegisterCallback<ClickEvent>(ev => ShowHidePreselectionMenu());
         wallToggle.RegisterCallback<ClickEvent>(ev => StartCoroutine(UpdateDisplay()));
         slabToggle.RegisterCallback<ClickEvent>(ev => StartCoroutine(UpdateDisplay()));
+        produceAmendmentButton.clicked += webScript.ProduceAmendment;
 
         var DBScript = GameObject.Find("Root").GetComponent<DBInteractions>();
 

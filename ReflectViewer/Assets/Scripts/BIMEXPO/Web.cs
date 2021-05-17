@@ -409,4 +409,29 @@ public class Web : MonoBehaviour
         localPreselectionDone = true;
     }
 
+    public void ProduceAmendment()
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", clientId);
+        form.AddField("projectId", projectId);
+
+        string phpScript = "http://bimexpo/CreateAmendment.php";
+        
+        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        {
+            www.SendWebRequest();
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                // TO DO : Populate html here
+                Application.OpenURL("http://bimexpo/amendment.php");
+                Debug.Log("Amendment produced!");
+            }
+        }
+    }
+
 }

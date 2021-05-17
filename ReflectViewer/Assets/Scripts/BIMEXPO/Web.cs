@@ -42,6 +42,15 @@ public class Web : MonoBehaviour
         csvPath = csvPath.Replace("\\", "/");                   //SQL needs forwards slashes...
         StartCoroutine(CreateTableFromCSV(csvPath, "tptiles"));
         StartCoroutine(CreateUserChoicesTable());
+
+        // Enable the preselection menu now, to be 100% sure the coroutines here above rune BEFORE that
+        foreach (GameObject go in Resources.FindObjectsOfTypeAll<GameObject>())
+        {
+            if (go.name == "PreselectionMenu")
+            {
+                go.SetActive(true);
+            }
+        } 
     }
 
     private void Update()

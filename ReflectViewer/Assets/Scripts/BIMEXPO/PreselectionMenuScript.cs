@@ -54,6 +54,7 @@ public class PreselectionMenuScript : MonoBehaviour
 
     IEnumerator getAllTilesNames(string filter = "all")
     {
+        yield return new WaitForSeconds(5); // I want to be sure the CSV has been already loaded!
         var webScript = GameObject.Find("Root").GetComponent<Web>();
         if (filter == "all")
         {

@@ -63,14 +63,23 @@ $fillResult = $bdd->query($fillCommand);
 if ($fillResult) 
 {
 	echo "CSV loaded!";
+	if ($fillResult->rowCount() > 0) 
+	{
+    	echo "The CSV file ends with carriage return and newline.";
+    	$fillResult->closeCursor();
+	}
+	else
+	{
+		echo "The CSV file ends with newline.";
+		$newFillCommand = "LOAD DATA LOCAL INFILE '" . $csvPath . "' INTO TABLE tptiles FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' IGNORE 1 LINES;";
+		$newFillResult = $bdd->query($newFillCommand);
+		$newFillResult->closeCursor();
+	}
 } 
 else 
 {
   echo "0 lines inserted";
 }
-
-//Close the query access
-$fillResult->closeCursor();
 
 //Remove useless columns
 $removeCommand = "ALTER TABLE " . $tableName;

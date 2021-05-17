@@ -11,7 +11,7 @@
             <ui:VisualElement name="myscroll" style="height: 100%;">
                 <ui:Scroller high-value="100" direction="Vertical" value="100" style="flex-direction: row; flex-grow: 0; height: 100%;" />
             </ui:VisualElement>
-            <ui:VisualElement name="img-container" style="flex-direction: row; flex-wrap: wrap; flex-grow: 0; height: 100%; align-items: flex-start;" />
+            <ui:VisualElement name="img-container" style="flex-direction: row; flex-wrap: wrap; flex-grow: 0; height: 100%; align-items: flex-start; display: flex;" />
         </ui:VisualElement>
         <ui:Button text="OK" display-tooltip-when-elided="true" name="ok-button" style="left: 50%; bottom: 1%;" />
     </ui:VisualElement>

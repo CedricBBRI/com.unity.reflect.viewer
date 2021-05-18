@@ -3,6 +3,7 @@
 $clientId = $_POST["clientId"];
 $projectId = $_POST["projectId"];
 
+echo "test";
 try
 {
 	$bdd = new PDO('mysql:host=localhost;dbname=tpdemo;charset=utf8', 'root', '', array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::MYSQL_ATTR_LOCAL_INFILE => true));

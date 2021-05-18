@@ -409,7 +409,16 @@ public class Web : MonoBehaviour
         localPreselectionDone = true;
     }
 
-    public void ProduceAmendment()
+    /// <summary>
+    /// This function is merely a wrapper function for ProduceAmendment.
+    /// This way, it can be associated to a click event on the corresponding button.
+    /// </summary>
+    public void ProduceAmendmentWrapper()
+    {
+        StartCoroutine(ProduceAmendment());
+    }
+
+    private IEnumerator ProduceAmendment()
     {
         WWWForm form = new WWWForm();
         form.AddField("clientId", clientId);
@@ -419,7 +428,7 @@ public class Web : MonoBehaviour
         
         using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
         {
-            www.SendWebRequest();
+            yield return www.SendWebRequest();      // I have to do this here, otherwise www.result is still "InProgress" on the next line, and therefore enters the if, although it is a Success!
 
             if (www.result != UnityWebRequest.Result.Success)
             {

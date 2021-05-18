@@ -106,6 +106,7 @@ public class Web : MonoBehaviour
     IEnumerator createBuildingTable()
     {
         yield return new WaitForSeconds(10); // Waits 10s for the model to be loaded before creating the table
+
         List<string> surfaceIDs = new List<string>();
         List<string> surfaceArea = new List<string>();
         List<string> surfaceLevels = new List<string>();
@@ -416,6 +417,75 @@ public class Web : MonoBehaviour
             }
         }
         localPreselectionDone = true;
+    }
+
+    /// <summary>
+    /// This method returns a list of the local paths for the textures that are compatible with the surface provided as argument.
+    /// In this simple version, the only filtering is done on the type of surface: wall or floor.
+    /// </summary>
+    /// <param name="surface">The surface for which the compatible textures are requested.</param>
+    /// <returns>A List<string> of all the paths to the texture files.</string></returns>
+    public List<string> PullTexturesForSurface(GameObject surface)
+    {
+        string phpScript = "http://bimexpo/GetCompatibleTexturesFromDB.php";
+        string[] phpReturnedList = { };
+        List<string> textures = new List<string>();
+        var meta = surface.GetComponent<Metadata>();
+
+        WWWForm form = new WWWForm();
+
+        if (meta != null)
+        {
+            if (surface.name.Contains("Wall") || meta.GetParameter("Category").Contains("Wall"))
+            {
+                form.AddField("category", "wall");
+            }
+            else if (surface.name.Contains("Floor") || meta.GetParameter("Category").Contains("Floor"))
+            {
+                form.AddField("category", "floor");
+            }
+            else
+            {
+                Debug.Log("The type of surface is not recognized");
+                return textures;
+            }
+            using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+            {
+                www.SendWebRequest();
+                while (www.result == UnityWebRequest.Result.InProgress)
+                {
+                    // Just wait
+                }
+                if (www.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.Log(www.error);
+                }
+                else
+                {
+                    string receivedTilesString = www.downloadHandler.text;
+                    phpReturnedList = receivedTilesString.Split(';');
+                }
+            }
+            bool startRecordingResults = false;
+
+            foreach (string item in phpReturnedList)
+            {
+                if (startRecordingResults)
+                {
+                    textures.Add(item);
+                }
+                if (item.Contains("RETURNS"))
+                {
+                    startRecordingResults = true;
+                }
+            }
+            return textures;
+        }
+        else
+        {
+            Debug.Log("The selected surface has no metadata!");
+            return textures;
+        }
     }
 
 }

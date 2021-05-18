@@ -18,6 +18,7 @@ $avenantTable = "c" . $clientId . "_p" . $projectId . "_avenant";
 $surfacesTable = "c" . $clientId . "_p" . $projectId . "_surfaces";
 $choicesTable = "c" . $clientId . "_p" . $projectId . "_choices";
 $commentsTable = "c" . $clientId . "_p" . $projectId . "_comments";
+$tilesTable = "tptiles";
 
 // Delete old table
 $tableDeletion = "DROP TABLE IF EXISTS " . $avenantTable . ";";
@@ -33,7 +34,7 @@ else
 $result->closeCursor();
 
 // Create the table
-$tableCreation = "CREATE TABLE IF NOT EXISTS " . $avenantTable . " ( surface_id SMALLINT UNSIGNED NOT NULL, level TINYINT, area VARCHAR(20), libelle VARCHAR(100), comment VARCHAR(200), PRIMARY KEY (surface_id) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
+$tableCreation = "CREATE TABLE IF NOT EXISTS " . $avenantTable . " ( surface_id INT UNSIGNED NOT NULL, level VARCHAR(20), area VARCHAR(20), libelle VARCHAR(100), comment VARCHAR(200), PRIMARY KEY (surface_id) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
 $result = $bdd->query($tableCreation);
 
 if ($result->errorCode() == 00000) 

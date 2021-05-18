@@ -12,7 +12,7 @@ catch(Exception $e)
 	die('Error : ' . $e->getMessage());
 }
 
-$tableCreation = "CREATE TABLE IF NOT EXISTS c" . $clientId . "_p" . $projectId . "_choices ( id_surface SMALLINT UNSIGNED NOT NULL, id_tile SMALLINT UNSIGNED NOT NULL, PRIMARY KEY (id_surface) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
+$tableCreation = "CREATE TABLE IF NOT EXISTS c" . $clientId . "_p" . $projectId . "_choices ( id_surface INT UNSIGNED NOT NULL, id_tile SMALLINT UNSIGNED NOT NULL, PRIMARY KEY (id_surface) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
 $result = $bdd->query($tableCreation);
 
 if ($result->errorCode() == 00000) 

@@ -118,7 +118,7 @@ public class DBInteractions : MonoBehaviour
     public void saveComment(string comment, GameObject surface)
     {
         //Create the table
-        string createCmd = "CREATE TABLE IF NOT EXISTS c" + clientId + "_p" + projectId + "_comments ( id_surface SMALLINT UNSIGNED NOT NULL, comment VARCHAR(200), PRIMARY KEY (id_surface) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
+        string createCmd = "CREATE TABLE IF NOT EXISTS c" + clientId + "_p" + projectId + "_comments ( id_surface INT UNSIGNED NOT NULL, comment VARCHAR(200), PRIMARY KEY (id_surface) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
         try
         {
             MySqlCommand cmdSql = new MySqlCommand(createCmd, con);

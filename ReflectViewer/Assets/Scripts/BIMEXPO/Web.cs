@@ -418,6 +418,9 @@ public class Web : MonoBehaviour
         StartCoroutine(ProduceAmendment());
     }
 
+    /// <summary>
+    /// Produces the amendment in an HTML page, and opens the page.
+    /// </summary>
     private IEnumerator ProduceAmendment()
     {
         WWWForm form = new WWWForm();
@@ -436,9 +439,7 @@ public class Web : MonoBehaviour
             }
             else
             {
-                // TO DO : Populate html here
-                Application.OpenURL("http://bimexpo/amendment.php");
-                Debug.Log("Amendment produced!");
+                Application.OpenURL("http://bimexpo/amendment.php?clientId=" + clientId + "&projectId=" + projectId);
             }
         }
     }

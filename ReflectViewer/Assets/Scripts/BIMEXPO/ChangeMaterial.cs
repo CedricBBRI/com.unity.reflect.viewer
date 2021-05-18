@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 using System.Linq;
+using System.IO;
 
 namespace UnityEngine.Reflect
 {
@@ -19,8 +20,10 @@ namespace UnityEngine.Reflect
         public float[] floatImgOffset; //[x,y,z] offset of image selection images, can be [0,0,0]
         private Vector3 hitPoint;
 
-        List<Material> matPoss;
+        public List<Texture2D> texPoss;
+        public List<Material> matPoss;
         List<Image> materialImages;
+        public List<string> texPaths;
 
         float timeClick;
 
@@ -37,15 +40,20 @@ namespace UnityEngine.Reflect
 
         public Material testMat;
 
+        Web webScript;
+
+        bool newSelected = false;
+
         // Start is called before the first frame update
         void Start() //Initializes time, root, the images for the right click menu...
         {
             //Added by Arnaud, 05/05/21 because FindAllObjects-->FindAll-->transformList is null otherwise
             FindAllObjects findAllObjectsScript = GameObject.Find("Root").GetComponent<FindAllObjects>();
             findAllObjectsScript.ClearLists();
-
+            webScript = GameObject.Find("Root").GetComponent<Web>();
             //Added by Arnaud, 05/05/21 because it is null otherwise and thus materialImages.Add(tempImg) crashes
             materialImages = new List<Image>();
+            texPoss = new List<Texture2D>();
 
             timeClick = Time.time;
             for (int i = 1; i < 300; i++)
@@ -71,9 +79,10 @@ namespace UnityEngine.Reflect
         {
             if (true) //if material replacement can happen
             {
-                if (selectedObject != null)
+                if (newSelected && selectedObject != null)
                 {
-                    //matPoss = CreateUINew(selectedObject, 1);
+                    matPoss = CreateUINew(selectedObject, 1);
+                    newSelected = false;
                 }
                 if (Input.GetMouseButtonDown(1)) //right click, this is done for timing reasons
                 {
@@ -81,16 +90,23 @@ namespace UnityEngine.Reflect
                 }
                 if ((Input.GetMouseButtonUp(1) && Time.time - timeClick < 0.3f) || (Input.touchCount > 2 && Input.touches[2].phase == TouchPhase.Began)) //checks for a fast right click
                 {
+
+                    newSelected = true;
+
                     selectedObject = ClickObjects();
                     showText.text = selectedObject.name;
                     newMaterialCopy = new Material(selectedObject.GetComponent<Renderer>().material);
                     newMaterialCopy.shader = Shader.Find("Unlit/Texture");
                     newMaterialCopyImage.material = newMaterialCopy;
 
-                    ChangeMaterialClick(testMat, selectedObject);
+                    //ChangeMaterialClick(testMat, selectedObject);
 
                 }
-                if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.LeftControl)) //right click and ctrl
+                if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.RightControl))
+                {
+                    ChangeMaterialClick(testMat, selectedObject);
+                }
+                    if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.LeftControl)) //right click and ctrl
                 {
                     selectedObject = ClickObjects();
                 }
@@ -142,8 +158,7 @@ namespace UnityEngine.Reflect
         {
             Vector3 imOffset = new Vector3(floatImgOffset[0], floatImgOffset[1], floatImgOffset[2]); //Defines offsets for tile selection menu
             var meta = go.GetComponent<Metadata>();//Metadata of go
-            List<Material> matPoss = new List<Material>();
-            List<Texture> texPoss = new List<Texture>();
+            //List<Material> matPoss = new List<Material>();
             if (go.name.Contains("Wall") || meta.GetParameter("Category").Contains("Wall")) //If it's a wall, show wall material options
             {
                 matPoss.AddRange(Resources.LoadAll("Materials/Wall", typeof(Material)).Cast<Material>().ToList());
@@ -162,14 +177,29 @@ namespace UnityEngine.Reflect
                 matPoss.AddRange(Resources.LoadAll("Materials/Wall", typeof(Material)).Cast<Material>().ToList());
             }
             float[] mortarWidthArray = { 0.01f, 0.03f, 0.1f };//Possible choices of mortar widths in meters, defined hear because it was fast and easy...
+
+            texPaths = webScript.PullTexturesForSurface(go);
+            matPoss.Clear();
+            texPoss.Clear();
+            foreach(string st in texPaths)
+            {
+                var texture = LoadTextureFromDisk(st);
+                texPoss.Add(texture);
+            }
             foreach (Texture tex in texPoss) //Generate a tile material for every possible texture that doesn't have one yet
             {
+                Material tempMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                tempMat.mainTexture = tex;
+
                 //Material tempMat = new Material(Shader.Find("Custom/TileShader"));
                 //tempMat.mainTexture = tex;
                 //tempMat.SetFloat("_MortarSize", mortarWidthArray[mortarSizeDrop.value]);
-                //matPoss.Add(tempMat);
+                matPoss.Add(tempMat);
             }
-            if (draw >= 1)//Draws the materials on screen
+
+
+
+            if (draw >= 1 && false)//Draws the materials on screen
             {
                 for (int i = 0; i < materialImages.Count()+5; i++)
                 {
@@ -199,6 +229,12 @@ namespace UnityEngine.Reflect
         public void ChangeMaterialClick(Material mat, GameObject selectedObject) //Changes materials (all of them) of selectedObject to mat
         {
             functionReplaceCalled = true;
+            //TEST
+            if (matPoss.Count >= 1)
+            {
+                mat = matPoss[0];
+            }
+            //TEST
             Texture2D texMort = (Texture2D) mat.mainTexture;
             mat.mainTexture = texMort;
             foreach (Renderer rend in selectedObject.GetComponents<Renderer>())
@@ -277,6 +313,28 @@ namespace UnityEngine.Reflect
                     }
                 }
             }
+        }
+        public Texture2D LoadTextureFromDisk(string FilePath)
+        {
+            // Load a PNG or JPG file from disk to a Texture2D
+            // Returns null if load fails
+            Texture2D Tex2D;
+            byte[] FileData;
+
+
+            //Get the 1st image within directory
+            string picture = FilePath;
+
+            if (File.Exists(picture))
+            {
+                //Debug.Log("File exists!");
+                FileData = File.ReadAllBytes(picture);
+                Tex2D = new Texture2D(2, 2);                // Create new "empty" texture
+                if (Tex2D.LoadImage(FileData))              // Load the imagedata into the texture (size is set automatically)
+                    return Tex2D;                           // If data = readable -> return texture
+            }
+            Debug.Log("File doesn't exist!");
+            return null;                                    // Return null if load failed
         }
     }
 }

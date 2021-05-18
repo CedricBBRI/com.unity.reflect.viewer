@@ -422,6 +422,7 @@ public class Web : MonoBehaviour
     /// <summary>
     /// This method returns a list of the local paths for the textures that are compatible with the surface provided as argument.
     /// In this simple version, the only filtering is done on the type of surface: wall or floor.
+    /// Only the preselected tiles are pulled from DB.
     /// </summary>
     /// <param name="surface">The surface for which the compatible textures are requested.</param>
     /// <returns>A List<string> of all the paths to the texture files.</string></returns>

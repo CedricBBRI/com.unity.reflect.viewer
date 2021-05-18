@@ -13,10 +13,10 @@ catch(Exception $e)
 }
 
 if ($category == "wall") {
-	$getCommand = "SELECT `chemin_texture` FROM `" . $tilesTable . "` WHERE `mur`=1";
+	$getCommand = "SELECT `chemin_texture` FROM tptiles INNER JOIN `preselections` ON  preselections.tile_id=tptiles.id WHERE mur=1";
 }
 else{
-	$getCommand = "SELECT `chemin_texture` FROM `" . $tilesTable . "` WHERE `sol`=1";
+	$getCommand = "SELECT `chemin_texture` FROM tptiles INNER JOIN `preselections` ON  preselections.tile_id=tptiles.id WHERE sol=1";
 }
 
 $result = $bdd->query($getCommand);

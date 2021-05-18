@@ -427,6 +427,9 @@ public class Web : MonoBehaviour
     /// <returns>A List<string> of all the paths to the texture files.</string></returns>
     public List<string> PullTexturesForSurface(GameObject surface)
     {
+        string currentDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        string picturesDir = Directory.GetParent(currentDir).Parent.Parent.FullName + "\\pictures_carrelages\\";
+
         string phpScript = "http://bimexpo/GetCompatibleTexturesFromDB.php";
         string[] phpReturnedList = { };
         List<string> textures = new List<string>();
@@ -472,7 +475,8 @@ public class Web : MonoBehaviour
             {
                 if (startRecordingResults)
                 {
-                    textures.Add(item);
+                    string[] myfiles = Directory.GetFiles(picturesDir + item);
+                    textures.Add(myfiles[0]);
                 }
                 if (item.Contains("RETURNS"))
                 {

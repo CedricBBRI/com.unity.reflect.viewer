@@ -366,7 +366,12 @@ public class Web : MonoBehaviour
         }
     }
 
-    public Texture2D LoadTextureFromDisk(string FilePath)
+    /// <summary>
+    /// Given a folder path, this function gets the 1st file in the folder and returns it as a 2D Texture.
+    /// </summary>
+    /// <param name="FolderPath">The full path of the folder to look into.</param>
+    /// <returns>A Texture2D of the 1st file found in the folder.</returns>
+    public Texture2D LoadTextureFromDisk(string FolderPath)
     {
         // Load a PNG or JPG file from disk to a Texture2D
         // Returns null if load fails
@@ -375,7 +380,7 @@ public class Web : MonoBehaviour
         string[] filesInDir;
 
         //Files in the directory
-        filesInDir = Directory.GetFiles(FilePath);
+        filesInDir = Directory.GetFiles(FolderPath);
 
         //Get the 1st image within directory
         string picture = filesInDir[0];

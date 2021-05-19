@@ -1,5 +1,7 @@
-﻿Shader "Custom/RotateUVs" {
-    Properties{
+Shader "Custom/RotateUVs"
+{
+    Properties
+    {
         _MainTex("Base (RGB)", 2D) = "white" {}
         _RotationSpeed("Rotation Speed", Float) = 2.0
     }

@@ -188,7 +188,9 @@ namespace UnityEngine.Reflect
             }
             foreach (Texture tex in texPoss) //Generate a tile material for every possible texture that doesn't have one yet
             {
-                Material tempMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                //Material tempMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                Material tempMat = new Material(Shader.Find("Shader Graphs/testshaderlit"));
+                tempMat.SetFloat("_MortarSize", 0.02f);
                 tempMat.mainTexture = tex;
 
                 //Material tempMat = new Material(Shader.Find("Custom/TileShader"));

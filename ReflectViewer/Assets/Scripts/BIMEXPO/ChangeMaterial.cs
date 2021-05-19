@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using System.Linq;
 using System.IO;
+using UnityEngine.Networking;
 
 namespace UnityEngine.Reflect
 {
@@ -235,6 +236,9 @@ namespace UnityEngine.Reflect
                 mat = matPoss[0];
             }
             //TEST
+
+            // AC - 19/05/21 - Here bring up my menu offering the possibility of choosing the material to apply.
+
             Texture2D texMort = (Texture2D) mat.mainTexture;
             mat.mainTexture = texMort;
             foreach (Renderer rend in selectedObject.GetComponents<Renderer>())
@@ -247,6 +251,29 @@ namespace UnityEngine.Reflect
                 rend.sharedMaterials = mats;
             }
             selectedObject.GetComponent<MeshRenderer>().material = mat;
+
+            // AC - 19/05/21 - Now saving this chosen material in DB
+            var webScript = GameObject.Find("Root").GetComponent<Web>();
+            WWWForm form = new WWWForm();
+            form.AddField("surfaceId", selectedObject.GetComponent<Metadata>().GetParameter("Id"));
+            form.AddField("tileName", mat.name);
+            form.AddField("clientId", webScript.clientId);
+            form.AddField("projectId", webScript.projectId);
+
+            using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/SaveMaterialChoiceToDB.php", form))
+            {
+                // Request and wait for the desired page.
+                www.SendWebRequest();   // If this slows down too much, we'll have to use a coroutine.. If it goes too fast, it will go in the if (?)
+
+                if (www.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.Log(www.error);
+                }
+                else
+                {
+                    Debug.Log(www.downloadHandler.text);
+                }
+            }
         }
 
         public void ReplaceObject() //Replaces the selectedObject with replacementTest, matches size as well

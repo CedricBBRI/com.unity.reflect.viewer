@@ -14,7 +14,7 @@ public class MenusHandler : MonoBehaviour
         //Wait for the building to be loaded, then show the preselection button
         if (GameObject.Find("Root").transform.childCount > 0 && !preselectionButtonOn)
         {
-            StartCoroutine(ShowPreselectionButton());
+            StartCoroutine(ShowButtons());
             preselectionButtonOn = true;
         }
 
@@ -64,14 +64,16 @@ public class MenusHandler : MonoBehaviour
         */
     }
 
-    IEnumerator ShowPreselectionButton()
+    IEnumerator ShowButtons()
     {
         yield return new WaitForSeconds(5);
 
         GameObject preselectionUI = GameObject.Find("PreselectionMenu");
         var rootVisualElement = preselectionUI.GetComponent<UIDocument>().rootVisualElement;
         Button showHideMenu = rootVisualElement.Q<Button>("show-hide-menu");
+        Button amendment = rootVisualElement.Q<Button>("produce-amendment");
         showHideMenu.style.display = DisplayStyle.Flex;
+        amendment.style.display = DisplayStyle.Flex;
     }
 
     /// <summary>

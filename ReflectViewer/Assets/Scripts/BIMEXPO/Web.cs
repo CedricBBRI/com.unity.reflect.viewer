@@ -425,6 +425,41 @@ public class Web : MonoBehaviour
     }
 
     /// <summary>
+    /// This function is merely a wrapper function for ProduceAmendment.
+    /// This way, it can be associated to a click event on the corresponding button.
+    /// </summary>
+    public void ProduceAmendmentWrapper()
+    {
+        StartCoroutine(ProduceAmendment());
+    }
+
+    /// <summary>
+    /// Produces the amendment in an HTML page, and opens the page.
+    /// </summary>
+    private IEnumerator ProduceAmendment()
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", clientId);
+        form.AddField("projectId", projectId);
+
+        string phpScript = "http://bimexpo/CreateAmendment.php";
+        
+        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        {
+            yield return www.SendWebRequest();      // I have to do this here, otherwise www.result is still "InProgress" on the next line, and therefore enters the if, although it is a Success!
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                Application.OpenURL("http://bimexpo/amendment.php?clientId=" + clientId + "&projectId=" + projectId);
+            }
+        }
+    }
+
+    /// <summary>
     /// This method returns a list of the local paths for the textures that are compatible with the surface provided as argument.
     /// In this simple version, the only filtering is done on the type of surface: wall or floor.
     /// Only the preselected tiles are pulled from DB.

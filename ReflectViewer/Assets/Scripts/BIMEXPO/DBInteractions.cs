@@ -113,54 +113,12 @@ public class DBInteractions : MonoBehaviour
         }
     }
 
-    public void produceAvenant()
-    {
-        //Recuperate the list of selected tiles - from DB
-        try
-        {
-            //Create Avenant table
-            Connect_DB();
-            string avenantTable = "c" + clientId + "_p" + projectId + "_avenant";
-            string deleteTable = "DROP TABLE IF EXISTS " + avenantTable + ";";
-            string createTable = "CREATE TABLE IF NOT EXISTS " + avenantTable + " ( surface_id SMALLINT UNSIGNED NOT NULL, level TINYINT, room VARCHAR(20), libelle VARCHAR(100), comment VARCHAR(200), PRIMARY KEY (surface_id) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
-            MySqlCommand createAvenantTable = new MySqlCommand(deleteTable + createTable, con);
-            MySqlDataReader myReader = createAvenantTable.ExecuteReader();
-            myReader.Close();
-
-            //Make the join
-            Connect_DB();
-            string surfacesTable = "c" + clientId + "_p" + projectId + "_surfaces";
-            string choicesTable = "c" + clientId + "_p" + projectId + "_choices";
-            string commentsTable = "c" + clientId + "_p" + projectId + "_comments";
-            
-            string cmd = "INSERT INTO " + avenantTable + " SELECT " + surfacesTable + ".id_surface, " + surfacesTable + ".level, " + surfacesTable + ".room_name, " + tilesTable + ".libelle, " + commentsTable + ".comment";
-            cmd = cmd + " FROM " + surfacesTable;
-            cmd = cmd + " INNER JOIN " + choicesTable + " ON " + surfacesTable + ".id_surface = " + choicesTable + ".id_surface";
-            cmd = cmd + " INNER JOIN " + tilesTable + " ON " + choicesTable + ".id_tile = " + tilesTable + ".id";
-            cmd = cmd + " INNER JOIN " + commentsTable + " ON " + commentsTable + ".id_surface = " + surfacesTable + ".id_surface;";
-
-            MySqlCommand joinTables = new MySqlCommand(cmd, con);
-            myReader = joinTables.ExecuteReader();
-
-            while (myReader.Read())
-            {
-                Debug.Log(myReader["level"]);
-            }
-            myReader.Close();
-        }
-        catch (Exception ex)
-        {
-            Debug.Log(ex.Message);
-        }
-        
-    }
-
     
 
     public void saveComment(string comment, GameObject surface)
     {
         //Create the table
-        string createCmd = "CREATE TABLE IF NOT EXISTS c" + clientId + "_p" + projectId + "_comments ( id_surface SMALLINT UNSIGNED NOT NULL, comment VARCHAR(200), PRIMARY KEY (id_surface) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
+        string createCmd = "CREATE TABLE IF NOT EXISTS c" + clientId + "_p" + projectId + "_comments ( id_surface INT UNSIGNED NOT NULL, comment VARCHAR(200), PRIMARY KEY (id_surface) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
         try
         {
             MySqlCommand cmdSql = new MySqlCommand(createCmd, con);

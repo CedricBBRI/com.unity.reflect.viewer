@@ -48,10 +48,18 @@ $result->closeCursor();
 
 //Make the join
 $tableJoin = "INSERT INTO " . $avenantTable . " SELECT " . $surfacesTable . ".id_surface, " . $surfacesTable . ".level, " . $surfacesTable . ".area, " . $tilesTable . ".libelle, " . $commentsTable . ".comment";
-$tableJoin = $tableJoin . " FROM " . $surfacesTable;
-$tableJoin = $tableJoin . " INNER JOIN " . $choicesTable . " ON " . $surfacesTable . ".id_surface = " . $choicesTable . ".id_surface";
+$tableJoin = $tableJoin . " FROM " . $choicesTable;
 $tableJoin = $tableJoin . " INNER JOIN " . $tilesTable . " ON " . $choicesTable . ".id_tile = " . $tilesTable . ".id";
-$tableJoin = $tableJoin . " INNER JOIN " . $commentsTable . " ON " . $commentsTable . ".id_surface = " . $surfacesTable . ".id_surface;";
+$tableJoin = $tableJoin . " INNER JOIN " . $surfacesTable . " ON " . $choicesTable . ".id_surface = " . $surfacesTable . ".id_surface";
+$tableJoin = $tableJoin . " LEFT JOIN " . $commentsTable . " ON " . $commentsTable . ".id_surface = " . $surfacesTable . ".id_surface;";
+
+//SELECT c123456_p000001_surfaces.id_surface, c123456_p000001_surfaces.level, c123456_p000001_surfaces.area, tptiles.libelle, c123456_p000001_comments.comment 
+//FROM c123456_p000001_choices 
+//INNER JOIN tptiles ON c123456_p000001_choices.id_tile = tptiles.id
+//INNER JOIN c123456_p000001_surfaces ON c123456_p000001_choices.id_surface = c123456_p000001_surfaces.id_surface 
+//LEFT JOIN c123456_p000001_comments ON c123456_p000001_comments.id_surface = c123456_p000001_surfaces.id_surface;
+
+echo $tableJoin;
 
 $result = $bdd->query($tableJoin);
 

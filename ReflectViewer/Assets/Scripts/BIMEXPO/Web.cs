@@ -166,6 +166,10 @@ public class Web : MonoBehaviour
         using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/GetTilePreselection.php", form))
         {
             www.SendWebRequest();
+            while (www.result == UnityWebRequest.Result.InProgress)
+            {
+                //Wait
+            }
             if (www.result != UnityWebRequest.Result.Success)
             {
                 Debug.Log(www.error);
@@ -200,6 +204,18 @@ public class Web : MonoBehaviour
             if (item.Contains("RETURNS"))
             {
                 startRecordingResults = true;
+                switch (category)
+                {
+                    case "all":
+                        localSelectedTiles.Clear();
+                        break;
+                    case "walls":
+                        localWallSelectedTiles.Clear();
+                        break;
+                    case "slabs":
+                        localSlabSelectedTiles.Clear();
+                        break;
+                }
             }
         }
     }
@@ -217,6 +233,10 @@ public class Web : MonoBehaviour
         using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/GetTexturePathFromName.php", form))
         {
             www.SendWebRequest();
+            while (www.result == UnityWebRequest.Result.InProgress)
+            {
+                //Wait
+            }
             if (www.result != UnityWebRequest.Result.Success)
             {
                 Debug.Log(www.error);
@@ -371,7 +391,7 @@ public class Web : MonoBehaviour
     /// </summary>
     /// <param name="FolderPath">The full path of the folder to look into.</param>
     /// <returns>A Texture2D of the 1st file found in the folder.</returns>
-    public Texture2D LoadTextureFromDisk(string FolderPath)
+    public Texture2D LoadTextureFromDiskFolder(string FolderPath)
     {
         // Load a PNG or JPG file from disk to a Texture2D
         // Returns null if load fails
@@ -422,6 +442,41 @@ public class Web : MonoBehaviour
             }
         }
         localPreselectionDone = true;
+    }
+
+    /// <summary>
+    /// This function is merely a wrapper function for ProduceAmendment.
+    /// This way, it can be associated to a click event on the corresponding button.
+    /// </summary>
+    public void ProduceAmendmentWrapper()
+    {
+        StartCoroutine(ProduceAmendment());
+    }
+
+    /// <summary>
+    /// Produces the amendment in an HTML page, and opens the page.
+    /// </summary>
+    private IEnumerator ProduceAmendment()
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", clientId);
+        form.AddField("projectId", projectId);
+
+        string phpScript = "http://bimexpo/CreateAmendment.php";
+        
+        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        {
+            yield return www.SendWebRequest();      // I have to do this here, otherwise www.result is still "InProgress" on the next line, and therefore enters the if, although it is a Success!
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                Application.OpenURL("http://bimexpo/amendment.php?clientId=" + clientId + "&projectId=" + projectId);
+            }
+        }
     }
 
     /// <summary>

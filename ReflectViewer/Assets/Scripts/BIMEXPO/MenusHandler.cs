@@ -14,7 +14,7 @@ public class MenusHandler : MonoBehaviour
         //Wait for the building to be loaded, then show the preselection button
         if (GameObject.Find("Root").transform.childCount > 0 && !preselectionButtonOn)
         {
-            StartCoroutine(ShowPreselectionButton());
+            StartCoroutine(ShowButtons());
             preselectionButtonOn = true;
         }
 
@@ -64,20 +64,22 @@ public class MenusHandler : MonoBehaviour
         */
     }
 
-    IEnumerator ShowPreselectionButton()
+    IEnumerator ShowButtons()
     {
         yield return new WaitForSeconds(5);
 
         GameObject preselectionUI = GameObject.Find("PreselectionMenu");
         var rootVisualElement = preselectionUI.GetComponent<UIDocument>().rootVisualElement;
         Button showHideMenu = rootVisualElement.Q<Button>("show-hide-menu");
+        Button amendment = rootVisualElement.Q<Button>("produce-amendment");
         showHideMenu.style.display = DisplayStyle.Flex;
+        amendment.style.display = DisplayStyle.Flex;
     }
 
     /// <summary>
     /// Sets the Tile choice menu active, so that it appears on screen. This also freezes the player camera so that as long as this menu is up, moving the mouse doesn't change the perspective.
     /// </summary>
-    void ActivateTilesChoiceMenu()
+    public void ActivateTilesChoiceMenu()
     {
         GameObject[] allGO = Resources.FindObjectsOfTypeAll<GameObject>();
         GameObject tileChoiceMenu = null;
@@ -85,9 +87,6 @@ public class MenusHandler : MonoBehaviour
         {
             if (go.name == "TileChoiceMenu")
             {
-                //Disable player camera rotation until the preselection is made
-                //GameObject.FindGameObjectWithTag("Player").GetComponent<FirstPersonController>().cameraCanMove = false;
-
                 //Show menu
                 go.SetActive(true);
                 tileChoiceMenu = go;

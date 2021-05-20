@@ -1,5 +1,7 @@
 <?php
 
+$category = $_POST["category"];
+
 try
 {
 	$bdd = new PDO('mysql:host=localhost;dbname=tpdemo;charset=utf8', 'root', '', array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::MYSQL_ATTR_LOCAL_INFILE => true));
@@ -9,7 +11,19 @@ catch(Exception $e)
 	die('Error : ' . $e->getMessage());
 }
 
-$selectTiles = "SELECT tptiles.libelle FROM tptiles INNER JOIN preselections ON tptiles.id = preselections.tile_id;";
+if ($category == "walls") {
+	$selectTiles = "SELECT tptiles.libelle FROM tptiles INNER JOIN preselections ON tptiles.id = preselections.tile_id WHERE tptiles.mur=1;";
+}
+elseif ($category == "slabs") {
+		$selectTiles = "SELECT tptiles.libelle FROM tptiles INNER JOIN preselections ON tptiles.id = preselections.tile_id WHERE tptiles.sol=1;";
+}
+else
+{
+	$selectTiles = "SELECT tptiles.libelle FROM tptiles INNER JOIN preselections ON tptiles.id = preselections.tile_id;";
+}
+
+
+
 $result = $bdd->query($selectTiles);
 
 if ($result->errorCode() == 00000) 

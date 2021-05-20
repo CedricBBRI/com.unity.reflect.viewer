@@ -4,10 +4,11 @@ using UnityEngine.UIElements;
 using UnityEngine.Reflect;
 using System.IO;
 using System.Reflection;
+using UnityEngine.Networking;
 
 public class TilesChoiceMenuScript : MonoBehaviour
 {
-    public string chosenMaterial;
+    public string chosenMaterial, chosenTexturePath;
     public GameObject target;
     private Button okButton;
 
@@ -17,9 +18,11 @@ public class TilesChoiceMenuScript : MonoBehaviour
         //Create the menu
         var rootVisualElement = GetComponent<UIDocument>().rootVisualElement;
         okButton = rootVisualElement.Q<Button>("ok-button");
-        //okButton.RegisterCallback<ClickEvent>(ev => ApplyMaterial());
         okButton.styleSheets.Add(Resources.Load<StyleSheet>("USS/testVE"));
         okButton.AddToClassList("ok-but");
+        okButton.clicked += SaveChosenMaterialToDB;
+        okButton.clicked += ApplyChosenMaterialToSurface;
+        okButton.clicked += CloseMenu;
 
         VisualElement imgContainer = rootVisualElement.Q<VisualElement>("img-container");
         imgContainer.styleSheets.Add(Resources.Load<StyleSheet>("USS/testVE"));
@@ -38,9 +41,14 @@ public class TilesChoiceMenuScript : MonoBehaviour
     /// <param name="name"></param>
     public void SelectMaterial(string name)
     {
+        var webScript = GameObject.Find("Root").GetComponent<Web>();
         chosenMaterial = name;
+        chosenTexturePath = webScript.GetTexturePathFromNameM(name);
+        string currentDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        string tilePicturesFolder = Directory.GetParent(currentDir).Parent.Parent.FullName + "\\pictures_carrelages\\";
+        chosenTexturePath = tilePicturesFolder + chosenTexturePath;
 
-        //Change visual aspect of the chosen material
+        //Change visual aspect of the chosen material, in the menu
         var rootVisualElement = GetComponent<UIDocument>().rootVisualElement;
         VisualElement myBox = rootVisualElement.Q<VisualElement>("img-container");
         IEnumerable<VisualElement> tiles = myBox.Children();
@@ -59,36 +67,82 @@ public class TilesChoiceMenuScript : MonoBehaviour
         }
     }
 
-    /*
-    /// <summary>
-    /// Validates the choice of a tile on a given surface. This will save the choice in the DB, and close the menu until another surface is right-clicked by the user.
-    /// </summary>
-    void ApplyMaterial()
+    void ApplyChosenMaterialToSurface()
     {
-        var loadTxtScript = GameObject.Find("FirstPersonController").GetComponent<DBInteractions>();
-        string path = @"c:\users\aca\Documents\Projects\BIMEXPO\pictures_carrelages\" + loadTxtScript.GetTexturePathFromName(chosenMaterial);
-        loadTxtScript.changeMaterial(target, path);
-        //Get the ID of the surface from Metadata script
-        string surfaceId = target.GetComponent<dummyMetadataScript>().ID.ToString();
-        //Get the tile ID from its name
-        string tileId = loadTxtScript.GetTileIdFromName(chosenMaterial);
-        //Save the user choice to DB
-        loadTxtScript.SaveUserChoiceToDB(tileId, surfaceId);
+        var webScript = GameObject.Find("Root").GetComponent<Web>();
+        var texture = webScript.LoadTextureFromDiskFolder(chosenTexturePath);
+        Material tempMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        tempMat.mainTexture = texture;
 
-        //Close menu
-        GameObject.Find("TileChoiceMenu").SetActive(false);
+        Texture2D texMort = (Texture2D)tempMat.mainTexture;
+        tempMat.mainTexture = texMort;
 
-        //Reactivate player camera rotation
-        GameObject.FindGameObjectWithTag("Player").GetComponent<FirstPersonController>().cameraCanMove = true;
+        foreach (Renderer rend in target.GetComponents<Renderer>())
+        {
+            var mats = new Material[rend.sharedMaterials.Length];
+            for (var j = 0; j < rend.sharedMaterials.Length; j++)
+            {
+                mats[j] = tempMat;
+            }
+            rend.sharedMaterials = mats;
+        }
+        target.GetComponent<MeshRenderer>().material = tempMat;
+        return;
     }
-    */
+    
+    /// <summary>
+    /// Saves the choice of a tile on a given surface. This will save the choice in the DB.
+    /// </summary>
+    void SaveChosenMaterialToDB()
+    {
+        var webScript = GameObject.Find("Root").GetComponent<Web>();
+        var changeMatScript = GameObject.Find("Root").GetComponent<ChangeMaterial>();
+        WWWForm form = new WWWForm();
+        form.AddField("surfaceId", changeMatScript.selectedObject.GetComponent<Metadata>().GetParameter("Id"));
+        form.AddField("tileName", chosenMaterial);
+        form.AddField("clientId", webScript.clientId);
+        form.AddField("projectId", webScript.projectId);
+
+        using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/SaveMaterialChoiceToDB.php", form))
+        {
+            // Request and wait for the desired page.
+            www.SendWebRequest();
+            while (www.result == UnityWebRequest.Result.InProgress)
+            {
+                //Wait
+            }
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                Debug.Log(www.downloadHandler.text);
+            }
+        }
+
+
+
+
+        //string path = @"c:\users\aca\Documents\Projects\BIMEXPO\pictures_carrelages\" + webScript.GetTexturePathFromName(chosenMaterial);
+        //webScript.changeMaterial(target, path);
+        //Get the ID of the surface from Metadata script
+        //string surfaceId = target.GetComponent<dummyMetadataScript>().ID.ToString();
+        //Get the tile ID from its name
+        //string tileId = webScript.GetTileIdFromName(chosenMaterial);
+        //Save the user choice to DB
+        //webScript.SaveUserChoiceToDB(tileId, surfaceId);
+    }
 
     void PopulateMenu()
     {
-        //Recuperate the list of selected tiles - from DB
+        //Recuperate the hit surface
+        target = GameObject.Find("Root").GetComponent<ChangeMaterial>().selectedObject;
+
+        //Recuperate the list of preselected tiles - from DB
         var webScript = GameObject.Find("Root").GetComponent<Web>();
         
-
         //Populate the menu with this selection
         var rootVisualElement = GetComponent<UIDocument>().rootVisualElement;
         VisualElement myBox = rootVisualElement.Q<VisualElement>("img-container");
@@ -96,8 +150,11 @@ public class TilesChoiceMenuScript : MonoBehaviour
 
         //The menu should only suggest tiles for walls or for ground, depending on what was hit
         List<string> filteredList = new List<string>();
-        target = GameObject.Find("Root").GetComponent<MenusHandler>().hitSurface;
-        //GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (target == null)
+        {
+            Debug.LogError("Tile choice menu didn't get the selected surface!");
+            return;
+        }
         if (target.GetComponent<Metadata>().GetParameter("Category").Contains("Wall"))
         {
             webScript.RetrievePreselectedTiles("walls"); //No need for coroutine, we have to wait for this menu anyways..
@@ -118,16 +175,35 @@ public class TilesChoiceMenuScript : MonoBehaviour
         string currentDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         string tilePicturesFolder = Directory.GetParent(currentDir).Parent.Parent.FullName + "\\pictures_carrelages\\";
         string texturePath;
-        foreach (string tileName in filteredList) // TO DO: 12/05/2021: there's a bug around here.. But now merging with Cedric's code, so this is put to hold for now.
+        foreach (string tileName in filteredList)
         {
             texturePath = webScript.GetTexturePathFromNameM(tileName);
             var myVE = new VisualElement();
             myVE.styleSheets.Add(Resources.Load<StyleSheet>("USS/testVE"));
             myVE.AddToClassList("medaillon");
-            myVE.style.backgroundImage = webScript.LoadTextureFromDisk(tilePicturesFolder + texturePath);
+            myVE.style.backgroundImage = webScript.LoadTextureFromDiskFolder(tilePicturesFolder + texturePath);
             myVE.name = tileName;
             myBox.Add(myVE);
             myVE.RegisterCallback<ClickEvent>(ev => SelectMaterial(tileName));
         }
+    }
+
+    /// <summary>
+    /// Closes the menu.
+    /// </summary>
+    void CloseMenu()
+    {
+        var rootVisualElement = GetComponent<UIDocument>().rootVisualElement;
+        VisualElement myBox = rootVisualElement.Q<VisualElement>("img-container");
+        List<VisualElement> myBoxList = new List<VisualElement>();
+        foreach (VisualElement ve in myBox.Children())
+        {
+            myBoxList.Add(ve);
+        }
+        foreach (VisualElement item in myBoxList)
+        {
+            myBox.Remove(item);
+        }
+        GameObject.Find("TileChoiceMenu").SetActive(false);
     }
 }

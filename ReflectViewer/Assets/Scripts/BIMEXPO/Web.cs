@@ -166,6 +166,10 @@ public class Web : MonoBehaviour
         using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/GetTilePreselection.php", form))
         {
             www.SendWebRequest();
+            while (www.result == UnityWebRequest.Result.InProgress)
+            {
+                //Wait
+            }
             if (www.result != UnityWebRequest.Result.Success)
             {
                 Debug.Log(www.error);
@@ -200,6 +204,18 @@ public class Web : MonoBehaviour
             if (item.Contains("RETURNS"))
             {
                 startRecordingResults = true;
+                switch (category)
+                {
+                    case "all":
+                        localSelectedTiles.Clear();
+                        break;
+                    case "walls":
+                        localWallSelectedTiles.Clear();
+                        break;
+                    case "slabs":
+                        localSlabSelectedTiles.Clear();
+                        break;
+                }
             }
         }
     }
@@ -217,6 +233,10 @@ public class Web : MonoBehaviour
         using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/GetTexturePathFromName.php", form))
         {
             www.SendWebRequest();
+            while (www.result == UnityWebRequest.Result.InProgress)
+            {
+                //Wait
+            }
             if (www.result != UnityWebRequest.Result.Success)
             {
                 Debug.Log(www.error);
@@ -371,7 +391,7 @@ public class Web : MonoBehaviour
     /// </summary>
     /// <param name="FolderPath">The full path of the folder to look into.</param>
     /// <returns>A Texture2D of the 1st file found in the folder.</returns>
-    public Texture2D LoadTextureFromDisk(string FolderPath)
+    public Texture2D LoadTextureFromDiskFolder(string FolderPath)
     {
         // Load a PNG or JPG file from disk to a Texture2D
         // Returns null if load fails

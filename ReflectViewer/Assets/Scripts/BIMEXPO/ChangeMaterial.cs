@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using System.Linq;
 using System.IO;
+using UnityEngine.Networking;
 
 namespace UnityEngine.Reflect
 {
@@ -235,18 +236,10 @@ namespace UnityEngine.Reflect
                 mat = matPoss[0];
             }
             //TEST
-            Texture2D texMort = (Texture2D) mat.mainTexture;
-            mat.mainTexture = texMort;
-            foreach (Renderer rend in selectedObject.GetComponents<Renderer>())
-            {
-                var mats = new Material[rend.sharedMaterials.Length];
-                for (var j = 0; j < rend.sharedMaterials.Length; j++)
-                {
-                    mats[j] = mat;
-                }
-                rend.sharedMaterials = mats;
-            }
-            selectedObject.GetComponent<MeshRenderer>().material = mat;
+
+            // AC - 19/05/21 - Here bring up my menu offering the possibility of choosing the material to apply.
+            var menuHandler = GameObject.Find("Root").GetComponent<MenusHandler>();
+            menuHandler.ActivateTilesChoiceMenu(); // This menu pops up, gets populated, and then the user can choose. After the choice, the tile gets applied and this choice is saved in DB.
         }
 
         public void ReplaceObject() //Replaces the selectedObject with replacementTest, matches size as well
@@ -314,6 +307,12 @@ namespace UnityEngine.Reflect
                 }
             }
         }
+
+        /// <summary>
+        /// Given a file path, this function returns it as a 2D Texture.
+        /// </summary>
+        /// <param name="FilePath">The full path of the file to look for.</param>
+        /// <returns>A Texture2D of the file.</returns>
         public Texture2D LoadTextureFromDisk(string FilePath)
         {
             // Load a PNG or JPG file from disk to a Texture2D

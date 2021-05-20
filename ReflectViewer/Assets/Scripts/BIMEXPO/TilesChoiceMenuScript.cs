@@ -193,6 +193,17 @@ public class TilesChoiceMenuScript : MonoBehaviour
     /// </summary>
     void CloseMenu()
     {
+        var rootVisualElement = GetComponent<UIDocument>().rootVisualElement;
+        VisualElement myBox = rootVisualElement.Q<VisualElement>("img-container");
+        List<VisualElement> myBoxList = new List<VisualElement>();
+        foreach (VisualElement ve in myBox.Children())
+        {
+            myBoxList.Add(ve);
+        }
+        foreach (VisualElement item in myBoxList)
+        {
+            myBox.Remove(item);
+        }
         GameObject.Find("TileChoiceMenu").SetActive(false);
     }
 }

@@ -204,6 +204,18 @@ public class Web : MonoBehaviour
             if (item.Contains("RETURNS"))
             {
                 startRecordingResults = true;
+                switch (category)
+                {
+                    case "all":
+                        localSelectedTiles.Clear();
+                        break;
+                    case "walls":
+                        localWallSelectedTiles.Clear();
+                        break;
+                    case "slabs":
+                        localSlabSelectedTiles.Clear();
+                        break;
+                }
             }
         }
     }

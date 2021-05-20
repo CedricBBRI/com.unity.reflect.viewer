@@ -38,7 +38,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
     /// <summary>
     /// Changes the visual aspect of the tile that is selected in the menu.
     /// </summary>
-    /// <param name="name"></param>
+    /// <param name="name">The 'libellé' of the tile</param>
     public void SelectMaterial(string name)
     {
         var webScript = GameObject.Find("Root").GetComponent<Web>();
@@ -70,6 +70,20 @@ public class TilesChoiceMenuScript : MonoBehaviour
     void ApplyChosenMaterialToSurface()
     {
         var webScript = GameObject.Find("Root").GetComponent<Web>();
+
+        // (Trying to) get the tile dimensions
+        List<int> tileDimensions = new List<int>();
+        try
+        {
+            tileDimensions = webScript.GetTileDimensionsFromLibelle(chosenMaterial);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError(e.Message);
+            throw;
+        }
+
+        // Then continue with material application onto surface
         var texture = webScript.LoadTextureFromDiskFolder(chosenTexturePath);
         Material tempMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
         tempMat.mainTexture = texture;

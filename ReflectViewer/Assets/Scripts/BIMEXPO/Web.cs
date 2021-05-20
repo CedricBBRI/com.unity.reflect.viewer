@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -551,6 +552,43 @@ public class Web : MonoBehaviour
             Debug.Log("The selected surface has no metadata!");
             return textures;
         }
+    }
+
+    /// <summary>
+    /// Extracts the tile dimensions in a 2 items list of integers.
+    /// The dimensions are extracted from the tile libelle, since it is part of it.
+    /// </summary>
+    /// <returns>A List containting 2 integers, which are the dimensions of the tile</returns>
+    public List<int> GetTileDimensionsFromLibelle(string libelle)
+    {
+        List<int> dimensions = new List<int>();
+        string[] libelleList = libelle.Split(' ');
+        string[] dimList = { };
+        foreach (string item in libelleList)
+        {
+            if (item.Contains("/"))
+            {
+                dimList = item.Split('/');
+                break;
+            }
+        }
+        if (dimList == null || dimList.Length != 2)
+        {
+            throw new Exception("Can't extract dimensions from tile libelle!");
+        }
+        foreach (string item in dimList)
+        {
+            int convertedDim;
+            if (Int32.TryParse(item, out convertedDim))
+            {
+                dimensions.Add(convertedDim);
+            }
+            else
+            {
+                throw new Exception("Can't extract dimensions from tile libelle!");
+            }
+        }
+        return dimensions;
     }
 
 }

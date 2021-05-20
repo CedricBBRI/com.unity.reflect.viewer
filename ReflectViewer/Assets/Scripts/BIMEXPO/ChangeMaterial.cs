@@ -238,42 +238,8 @@ namespace UnityEngine.Reflect
             //TEST
 
             // AC - 19/05/21 - Here bring up my menu offering the possibility of choosing the material to apply.
-
-            Texture2D texMort = (Texture2D) mat.mainTexture;
-            mat.mainTexture = texMort;
-            foreach (Renderer rend in selectedObject.GetComponents<Renderer>())
-            {
-                var mats = new Material[rend.sharedMaterials.Length];
-                for (var j = 0; j < rend.sharedMaterials.Length; j++)
-                {
-                    mats[j] = mat;
-                }
-                rend.sharedMaterials = mats;
-            }
-            selectedObject.GetComponent<MeshRenderer>().material = mat;
-
-            // AC - 19/05/21 - Now saving this chosen material in DB
-            var webScript = GameObject.Find("Root").GetComponent<Web>();
-            WWWForm form = new WWWForm();
-            form.AddField("surfaceId", selectedObject.GetComponent<Metadata>().GetParameter("Id"));
-            form.AddField("tileName", mat.name);
-            form.AddField("clientId", webScript.clientId);
-            form.AddField("projectId", webScript.projectId);
-
-            using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/SaveMaterialChoiceToDB.php", form))
-            {
-                // Request and wait for the desired page.
-                www.SendWebRequest();   // If this slows down too much, we'll have to use a coroutine.. If it goes too fast, it will go in the if (?)
-
-                if (www.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.Log(www.error);
-                }
-                else
-                {
-                    Debug.Log(www.downloadHandler.text);
-                }
-            }
+            var menuHandler = GameObject.Find("Root").GetComponent<MenusHandler>();
+            menuHandler.ActivateTilesChoiceMenu(); // This menu pops up, gets populated, and then the user can choose. After the choice, the tile gets applied and this choice is saved in DB.
         }
 
         public void ReplaceObject() //Replaces the selectedObject with replacementTest, matches size as well
@@ -341,6 +307,12 @@ namespace UnityEngine.Reflect
                 }
             }
         }
+
+        /// <summary>
+        /// Given a file path, this function returns it as a 2D Texture.
+        /// </summary>
+        /// <param name="FilePath">The full path of the file to look for.</param>
+        /// <returns>A Texture2D of the file.</returns>
         public Texture2D LoadTextureFromDisk(string FilePath)
         {
             // Load a PNG or JPG file from disk to a Texture2D

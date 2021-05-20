@@ -19,7 +19,7 @@ catch(Exception $e)
 
 $choiceInsertion = "REPLACE INTO c" . $clientId . "_p" . $projectId . "_choices (id_surface, id_tile) ";
 
-$choiceInsertion = $choiceInsertion . "SELECT tptiles.id, c" . $clientId . "_p" . $projectId . "_surfaces.id_surface FROM tptiles, c" . $clientId . "_p" . $projectId . "_surfaces ";
+$choiceInsertion = $choiceInsertion . "SELECT c" . $clientId . "_p" . $projectId . "_surfaces.id_surface, tptiles.id FROM c" . $clientId . "_p" . $projectId . "_surfaces, tptiles ";
 $choiceInsertion = $choiceInsertion . "WHERE libelle='" . $tileName . "' AND c" . $clientId . "_p" . $projectId . "_surfaces.id_surface='" . $surfaceId . "';";
 
 //$choiceInsertion = $choiceInsertion . "SELECT c" . $clientId . "_p" . $projectId . "_surfaces.id_surface, tptiles.id ";

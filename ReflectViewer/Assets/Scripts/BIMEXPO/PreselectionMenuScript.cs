@@ -131,7 +131,7 @@ public class PreselectionMenuScript : MonoBehaviour
                 myVE.styleSheets.Add(Resources.Load<StyleSheet>("USS/testVE"));
                 myVE.AddToClassList("medaillon");
                 myVE.name = tileName;
-                myVE.style.backgroundImage = webScript.LoadTextureFromDisk(tilePicturesFolder + texturePath);
+                myVE.style.backgroundImage = webScript.LoadTextureFromDiskFolder(tilePicturesFolder + texturePath);
                 myBox.Add(myVE);
 
                 myVE.RegisterCallback<ClickEvent>(ev => UpdateSelection(tileName));
@@ -150,7 +150,7 @@ public class PreselectionMenuScript : MonoBehaviour
                 myVE.styleSheets.Add(Resources.Load<StyleSheet>("USS/testVE"));
                 myVE.AddToClassList("medaillon");
                 myVE.name = tileName;
-                myVE.style.backgroundImage = webScript.LoadTextureFromDisk(tilePicturesFolder + texturePath);
+                myVE.style.backgroundImage = webScript.LoadTextureFromDiskFolder(tilePicturesFolder + texturePath);
                 myBox.Add(myVE);
 
                 myVE.RegisterCallback<ClickEvent>(ev => UpdateSelection(tileName));

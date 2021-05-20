@@ -79,7 +79,7 @@ public class MenusHandler : MonoBehaviour
     /// <summary>
     /// Sets the Tile choice menu active, so that it appears on screen. This also freezes the player camera so that as long as this menu is up, moving the mouse doesn't change the perspective.
     /// </summary>
-    void ActivateTilesChoiceMenu()
+    public void ActivateTilesChoiceMenu()
     {
         GameObject[] allGO = Resources.FindObjectsOfTypeAll<GameObject>();
         GameObject tileChoiceMenu = null;
@@ -87,9 +87,6 @@ public class MenusHandler : MonoBehaviour
         {
             if (go.name == "TileChoiceMenu")
             {
-                //Disable player camera rotation until the preselection is made
-                //GameObject.FindGameObjectWithTag("Player").GetComponent<FirstPersonController>().cameraCanMove = false;
-
                 //Show menu
                 go.SetActive(true);
                 tileChoiceMenu = go;

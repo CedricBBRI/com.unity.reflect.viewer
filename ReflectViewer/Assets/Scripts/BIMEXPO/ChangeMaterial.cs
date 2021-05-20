@@ -190,8 +190,9 @@ namespace UnityEngine.Reflect
             {
                 //Material tempMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
                 Material tempMat = new Material(Shader.Find("Shader Graphs/testshaderlit"));
-                tempMat.SetFloat("_MortarSize", 0.02f);
+                //tempMat.SetFloat("_MortarSize", 0.02f);
                 tempMat.mainTexture = tex;
+                //tempMat.mainTexture = tex;
 
                 //Material tempMat = new Material(Shader.Find("Custom/TileShader"));
                 //tempMat.mainTexture = tex;

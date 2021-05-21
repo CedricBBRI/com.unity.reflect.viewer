@@ -51,7 +51,8 @@ public class Web : MonoBehaviour
             {
                 go.SetActive(true);
             }
-        } 
+        }
+
     }
 
     private void Update()
@@ -591,4 +592,61 @@ public class Web : MonoBehaviour
         return dimensions;
     }
 
+    public double GetTilePriceFromLibelle(string libelle)
+    {
+        double price = -1;
+        string stringPrice = "";
+
+        WWWForm form = new WWWForm();
+        form.AddField("libelle", libelle);
+        string phpScript = "http://bimexpo/GetTilePriceFromLibelle.php";
+        string[] phpReturnedList = { };
+
+        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        {
+            www.SendWebRequest();
+            while (www.result == UnityWebRequest.Result.InProgress)
+            {
+                // Just wait
+            }
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                string receivedTilesString = www.downloadHandler.text;
+                phpReturnedList = receivedTilesString.Split(';');
+            }
+        }
+        bool startRecordingResults = false;
+        foreach (string item in phpReturnedList)
+        {
+            if (startRecordingResults)
+            {
+                stringPrice = item;
+            }
+            if (item.Contains("RETURNS"))
+            {
+                startRecordingResults = true;
+            }
+        }
+        if (stringPrice != "" && stringPrice.Split('€').Length > 0)
+        {
+            var toto = stringPrice.Split('€');
+            var tata = toto[0];
+            if (Double.TryParse(stringPrice.Split('€')[0], out price))
+            {
+                return price;
+            }
+            else
+            {
+                throw new Exception("Couldn't extract the tile price from the DB!");
+            }
+        }
+        else
+        {
+            throw new Exception("Couldn't extract the tile price from the DB!");
+        }
+    }
 }

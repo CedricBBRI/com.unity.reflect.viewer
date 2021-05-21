@@ -83,7 +83,7 @@ else
 
 //Remove useless columns
 $removeCommand = "ALTER TABLE " . $tableName;
-$uselessCols = array("code_lot", "code_art", "prix_vente", "date_maj_pv", "reimpression", "prix_anticipe", "localisation", "hs", "etiquette_affiche", "unite", "type_art", "conso", "ref", "categorie", "type_mat", "resist_abrasion", "resist_rayure", "rectifie", "etat_surface", "couleur", "variation_chrom", "couche_usure");
+$uselessCols = array("code_lot", "code_art", "date_maj_pv", "reimpression", "prix_anticipe", "localisation", "hs", "etiquette_affiche", "unite", "type_art", "conso", "ref", "categorie", "type_mat", "resist_abrasion", "resist_rayure", "rectifie", "etat_surface", "couleur", "variation_chrom", "couche_usure");
 $count = 0;
 
 foreach ($uselessCols as $value) 

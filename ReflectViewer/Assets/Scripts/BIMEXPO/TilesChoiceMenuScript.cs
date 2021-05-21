@@ -38,7 +38,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
     /// <summary>
     /// Changes the visual aspect of the tile that is selected in the menu.
     /// </summary>
-    /// <param name="name">The 'libellé' of the tile</param>
+    /// <param name="name">The 'libellÃ©' of the tile</param>
     public void SelectMaterial(string name)
     {
         var webScript = GameObject.Find("Root").GetComponent<Web>();
@@ -71,7 +71,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
     {
         var webScript = GameObject.Find("Root").GetComponent<Web>();
 
-        // (Trying to) get the tile dimensions
+        // Get the tile dimensions
         List<int> tileDimensions = new List<int>();
         try
         {

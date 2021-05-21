@@ -34,6 +34,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - Texture2D_53ba6fa495f547fd9b63637ac918c033:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - Texture2D_6b563205b6de4addb2f09c2d7810ab13:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -144,6 +148,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - Vector1_10D9C905: 0.3
+    - Vector1_513cac809738437ca5a98fa2147e57c0: 0.02
     - Vector1_57362EB6: 0.03
     - Vector1_92CD0678: 4
     - _AlphaClip: 0
@@ -204,7 +209,7 @@ Material:
     - _ZWrite: 0
     m_Colors:
     - Color_301500A6: {r: 0.24528292, g: 0.24528292, b: 0.24528292, a: 0}
-    - Vector2_26d3545830714817916bb86bfa1de021: {r: 0.2, g: 0.2, b: 0, a: 0}
+    - Vector2_26d3545830714817916bb86bfa1de021: {r: 0.2, g: 0.1, b: 0, a: 0}
     - _BASE_COLOR: {r: 0, g: 0, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 0.11792451, b: 0.11792451, a: 1}
     - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}

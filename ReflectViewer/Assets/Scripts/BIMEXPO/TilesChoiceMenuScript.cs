@@ -85,7 +85,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
 
         // Then continue with material application onto surface
         var texture = webScript.LoadTextureFromDiskFolder(chosenTexturePath);
-        Material tempMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        Material tempMat = new Material(Shader.Find("Shader Graphs/testshaderlit"));
         tempMat.mainTexture = texture;
 
         Texture2D texMort = (Texture2D)tempMat.mainTexture;

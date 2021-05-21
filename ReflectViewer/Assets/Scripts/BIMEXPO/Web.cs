@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Reflect; //Unity.Reflect has to be added to the asmdef in the current folder
 using System.Collections.ObjectModel;
+using Unity.Reflect.Viewer.UI;
 
 public class Web : MonoBehaviour
 {
@@ -57,6 +58,9 @@ public class Web : MonoBehaviour
 
     private void Update()
     {
+        // TODO UIStateManager
+        // Try to access m_UImanager
+        // what is a partial class
         if (GameObject.Find("Root").transform.childCount > 1 && !buildingTableCreated)
         {
             StartCoroutine(createBuildingTable());

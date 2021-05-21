@@ -33,7 +33,7 @@ else
 $result->closeCursor();
 
 // Create the table
-$tableCreation = "CREATE TABLE IF NOT EXISTS " . $avenantTable . " ( surface_id INT UNSIGNED NOT NULL, level VARCHAR(20), area VARCHAR(20), libelle VARCHAR(100), comment VARCHAR(200), PRIMARY KEY (surface_id) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
+$tableCreation = "CREATE TABLE IF NOT EXISTS " . $avenantTable . " ( surface_id INT UNSIGNED NOT NULL, level VARCHAR(20), area VARCHAR(20), libelle VARCHAR(100), unit_price VARCHAR(20), total_price DOUBLE UNSIGNED, comment VARCHAR(200), PRIMARY KEY (surface_id) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
 $result = $bdd->query($tableCreation);
 
 if ($result->errorCode() == 00000) 
@@ -47,7 +47,7 @@ else
 $result->closeCursor();
 
 //Make the join
-$tableJoin = "INSERT INTO " . $avenantTable . " SELECT " . $surfacesTable . ".id_surface, " . $surfacesTable . ".level, " . $surfacesTable . ".area, " . $tilesTable . ".libelle, " . $commentsTable . ".comment";
+$tableJoin = "INSERT INTO " . $avenantTable . " SELECT " . $surfacesTable . ".id_surface, " . $surfacesTable . ".level, " . $surfacesTable . ".area, " . $tilesTable . ".libelle, "  . $tilesTable . ".prix_vente, " . $choicesTable . ".surface_price, " . $commentsTable . ".comment";
 $tableJoin = $tableJoin . " FROM " . $choicesTable;
 $tableJoin = $tableJoin . " INNER JOIN " . $tilesTable . " ON " . $choicesTable . ".id_tile = " . $tilesTable . ".id";
 $tableJoin = $tableJoin . " INNER JOIN " . $surfacesTable . " ON " . $choicesTable . ".id_surface = " . $surfacesTable . ".id_surface";

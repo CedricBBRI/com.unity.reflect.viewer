@@ -57,7 +57,7 @@ public class Web : MonoBehaviour
 
     private void Update()
     {
-        if (GameObject.Find("Root").transform.childCount > 0 && !buildingTableCreated)
+        if (GameObject.Find("Root").transform.childCount > 1 && !buildingTableCreated)
         {
             StartCoroutine(createBuildingTable());
             buildingTableCreated = true;
@@ -476,6 +476,7 @@ public class Web : MonoBehaviour
             }
             else
             {
+                Debug.Log(www.downloadHandler.text);
                 Application.OpenURL("http://bimexpo/amendment.php?clientId=" + clientId + "&projectId=" + projectId);
             }
         }

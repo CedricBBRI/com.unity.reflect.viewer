@@ -4,6 +4,10 @@ $surfaceId = $_POST["surfaceId"];
 $tileName = $_POST["tileName"];
 $clientId = $_POST["clientId"];
 $projectId = $_POST["projectId"];
+$tilePrice = $_POST["tilePrice"];
+$areaString = $_POST["surfaceArea"];
+$area = explode('m', $areaString)[0];
+$totalPrice = floatval($area) * floatval($tilePrice);
 
 try
 {
@@ -14,22 +18,20 @@ catch(Exception $e)
 	die('Error : ' . $e->getMessage());
 }
 
-//TO DO : Get the tile id from its name, by using joins in db
-// insert (or replace) the line in the table
+echo "DEBUG: area: " . $area . "\n";
+echo "DEBUG: price: " . $tilePrice . "\n";
+echo "DEBUG: totalPrice: " . $totalPrice . "\n";
 
 $choiceInsertion = "REPLACE INTO c" . $clientId . "_p" . $projectId . "_choices (id_surface, id_tile) ";
 
 $choiceInsertion = $choiceInsertion . "SELECT c" . $clientId . "_p" . $projectId . "_surfaces.id_surface, tptiles.id FROM c" . $clientId . "_p" . $projectId . "_surfaces, tptiles ";
 $choiceInsertion = $choiceInsertion . "WHERE libelle='" . $tileName . "' AND c" . $clientId . "_p" . $projectId . "_surfaces.id_surface='" . $surfaceId . "';";
 
-//$choiceInsertion = $choiceInsertion . "SELECT c" . $clientId . "_p" . $projectId . "_surfaces.id_surface, tptiles.id ";
-//$choiceInsertion = $choiceInsertion . "FROM c" . $clientId . "_p" . $projectId . "_surfaces INNER JOIN tptiles ON c" . $clientId . "_p" . $projectId . "_surfaces.";
 $result = $bdd->query($choiceInsertion);
 
 if ($result->errorCode() == 00000) 
 {
   echo "User's choices table update: OK\r\n";
-  echo "command: " . $choiceInsertion;
 } 
 else 
 {
@@ -38,4 +40,22 @@ else
 
 //Close the query access
 $result->closeCursor();
+
+// Now the price
+
+
+$priceCmd = "UPDATE c" . $clientId . "_p" . $projectId . "_choices SET surface_price='" . $totalPrice . "' WHERE id_surface='" . $surfaceId . "';";
+$result = $bdd->query($priceCmd);
+if ($result->errorCode() == 00000) 
+{
+  echo "User's choices table update of price: OK\r\n";
+} 
+else 
+{
+  echo "Error while updating the price of the user's choices table!\r\n";
+}
+//Close the query access
+$result->closeCursor();
+
+
 ?>

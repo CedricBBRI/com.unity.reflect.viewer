@@ -116,6 +116,8 @@ public class TilesChoiceMenuScript : MonoBehaviour
         form.AddField("tileName", chosenMaterial);
         form.AddField("clientId", webScript.clientId);
         form.AddField("projectId", webScript.projectId);
+        form.AddField("tilePrice", webScript.GetTilePriceFromLibelle(chosenMaterial).ToString());
+        form.AddField("surfaceArea", changeMatScript.selectedObject.GetComponent<Metadata>().GetParameter("Area"));
 
         using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/SaveMaterialChoiceToDB.php", form))
         {

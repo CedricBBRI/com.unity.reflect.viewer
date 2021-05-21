@@ -48,23 +48,6 @@ public class DBInteractions : MonoBehaviour
     }
 
 
-    public void changeMaterial(GameObject obj, string texturePath)
-    {
-        //Create a new Material with standard shader
-        Material newMat = new Material(Shader.Find("Standard"));
-
-        //Fetch the texture from disk
-        Texture newTexture = (Texture)LoadTextureFromDisk(texturePath);
-
-        //Assign texture to material
-        newMat.mainTexture = newTexture;
-
-        //Assign the newly created Material onto the object
-        obj.GetComponent<Renderer>().material = newMat;
-
-        //StartCoroutine(GetTextureFromPC(url,obj));
-    }
-
     /// <summary>
     /// Function <c>ListAllTileNamesInDB</c> lists all the tiles names ('libelle') present in the tiles table in the DB.
     /// </summary>
@@ -97,21 +80,6 @@ public class DBInteractions : MonoBehaviour
         return libelles;
     }
 
-    public void SaveUserChoiceToDB(string tileId, string surfaceId)
-    {
-        //Create the user's choices DB - Using REPLACE to authorize the overwriting (if client changes its mind)
-        string insertCmd = "REPLACE INTO c" + clientId + "_p" + projectId + "_choices VALUES ( " + surfaceId + ", " + tileId + ")";
-        try
-        {
-            MySqlCommand cmdSql = new MySqlCommand(insertCmd, con);
-            cmdSql.ExecuteNonQuery();
-            con.Close();
-        }
-        catch (Exception ex)
-        {
-            Debug.Log(ex.Message);
-        }
-    }
 
     
 

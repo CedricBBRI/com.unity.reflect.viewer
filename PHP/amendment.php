@@ -25,6 +25,8 @@ $result = $bdd->query($query);
 			<th>Etage</th>
 			<th>Superficie</th>
 			<th>Nom du carrelage</th>
+			<th>Prix m²</th>
+			<th>Prix surface</th>
 			<th>Commentaires</th>
 		</tr>
 		<?php while($row = $result->fetch(PDO::FETCH_ASSOC)):;?>
@@ -32,6 +34,8 @@ $result = $bdd->query($query);
 			<td><?php echo $row['level'];?></td>
 			<td><?php echo $row['area'];?></td>
 			<td><?php echo $row['libelle'];?></td>
+			<td><?php echo $row['unit_price'];?></td>
+			<td><?php echo $row['total_price'];?></td>
 			<td><?php echo $row['comment'];?></td>
 		</tr>
 	<?php endwhile;?>

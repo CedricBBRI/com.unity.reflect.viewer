@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Reflect; //Unity.Reflect has to be added to the asmdef in the current folder
 using System.Collections.ObjectModel;
+using Unity.Reflect.Viewer.UI;
 
 public class Web : MonoBehaviour
 {
@@ -50,12 +52,16 @@ public class Web : MonoBehaviour
             {
                 go.SetActive(true);
             }
-        } 
+        }
+
     }
 
     private void Update()
     {
-        if (GameObject.Find("Root").transform.childCount > 0 && !buildingTableCreated)
+        // TODO UIStateManager
+        // Try to access m_UImanager
+        // what is a partial class
+        if (GameObject.Find("Root").transform.childCount > 1 && !buildingTableCreated)
         {
             StartCoroutine(createBuildingTable());
             buildingTableCreated = true;
@@ -474,6 +480,7 @@ public class Web : MonoBehaviour
             }
             else
             {
+                Debug.Log(www.downloadHandler.text);
                 Application.OpenURL("http://bimexpo/amendment.php?clientId=" + clientId + "&projectId=" + projectId);
             }
         }
@@ -553,4 +560,98 @@ public class Web : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Extracts the tile dimensions in a 2 items list of integers.
+    /// The dimensions are extracted from the tile libelle, since it is part of it.
+    /// </summary>
+    /// <returns>A List containting 2 integers, which are the dimensions of the tile</returns>
+    public List<int> GetTileDimensionsFromLibelle(string libelle)
+    {
+        List<int> dimensions = new List<int>();
+        string[] libelleList = libelle.Split(' ');
+        string[] dimList = { };
+        foreach (string item in libelleList)
+        {
+            if (item.Contains("/"))
+            {
+                dimList = item.Split('/');
+                break;
+            }
+        }
+        if (dimList == null || dimList.Length != 2)
+        {
+            throw new Exception("Can't extract dimensions from tile libelle!");
+        }
+        foreach (string item in dimList)
+        {
+            int convertedDim;
+            if (Int32.TryParse(item, out convertedDim))
+            {
+                dimensions.Add(convertedDim);
+            }
+            else
+            {
+                throw new Exception("Can't extract dimensions from tile libelle!");
+            }
+        }
+        return dimensions;
+    }
+
+    public double GetTilePriceFromLibelle(string libelle)
+    {
+        double price = -1;
+        string stringPrice = "";
+
+        WWWForm form = new WWWForm();
+        form.AddField("libelle", libelle);
+        string phpScript = "http://bimexpo/GetTilePriceFromLibelle.php";
+        string[] phpReturnedList = { };
+
+        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        {
+            www.SendWebRequest();
+            while (www.result == UnityWebRequest.Result.InProgress)
+            {
+                // Just wait
+            }
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                string receivedTilesString = www.downloadHandler.text;
+                phpReturnedList = receivedTilesString.Split(';');
+            }
+        }
+        bool startRecordingResults = false;
+        foreach (string item in phpReturnedList)
+        {
+            if (startRecordingResults)
+            {
+                stringPrice = item;
+            }
+            if (item.Contains("RETURNS"))
+            {
+                startRecordingResults = true;
+            }
+        }
+        if (stringPrice != "" && stringPrice.Split('€').Length > 0)
+        {
+            var toto = stringPrice.Split('€');
+            var tata = toto[0];
+            if (Double.TryParse(stringPrice.Split('€')[0], out price))
+            {
+                return price;
+            }
+            else
+            {
+                throw new Exception("Couldn't extract the tile price from the DB!");
+            }
+        }
+        else
+        {
+            throw new Exception("Couldn't extract the tile price from the DB!");
+        }
+    }
 }

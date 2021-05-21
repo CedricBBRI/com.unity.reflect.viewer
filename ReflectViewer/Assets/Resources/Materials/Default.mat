@@ -119,11 +119,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SampleTexture2D_5e8925b1bcdd474faf3d894c96b27510_Texture_1:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 6046ad94b7866b54e95087f8c9c99322, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SampleTexture2D_7a11efc666474c04a88e279457908ddf_Texture_1:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: c304c48c23c403442bb886896502d1b1, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
@@ -148,6 +148,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - Vector1_10D9C905: 0.3
+    - Vector1_2323e2361df0404ab6dbac83ca28a6d7: 0
     - Vector1_513cac809738437ca5a98fa2147e57c0: 0.02
     - Vector1_57362EB6: 0.03
     - Vector1_92CD0678: 4
@@ -209,7 +210,7 @@ Material:
     - _ZWrite: 0
     m_Colors:
     - Color_301500A6: {r: 0.24528292, g: 0.24528292, b: 0.24528292, a: 0}
-    - Vector2_26d3545830714817916bb86bfa1de021: {r: 0.2, g: 0.1, b: 0, a: 0}
+    - Vector2_26d3545830714817916bb86bfa1de021: {r: 0.22, g: 0.22, b: 0, a: 0}
     - _BASE_COLOR: {r: 0, g: 0, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 0.11792451, b: 0.11792451, a: 1}
     - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}

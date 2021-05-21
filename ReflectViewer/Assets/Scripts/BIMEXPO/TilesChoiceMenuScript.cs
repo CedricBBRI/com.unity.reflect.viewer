@@ -72,7 +72,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
         var webScript = GameObject.Find("Root").GetComponent<Web>();
 
         // Get the tile dimensions
-        List<int> tileDimensions = new List<int>();
+        List<double> tileDimensions = new List<double>();
         try
         {
             tileDimensions = webScript.GetTileDimensionsFromLibelle(chosenMaterial);
@@ -85,8 +85,10 @@ public class TilesChoiceMenuScript : MonoBehaviour
 
         // Then continue with material application onto surface
         var texture = webScript.LoadTextureFromDiskFolder(chosenTexturePath);
+        Vector4 tileDimVect = new Vector4((float) tileDimensions[0], (float) tileDimensions[1], 0f, 0f);
         Material tempMat = new Material(Shader.Find("Shader Graphs/testshaderlit"));
         tempMat.mainTexture = texture;
+        tempMat.SetVector("_TileSize", tileDimVect);
 
         Texture2D texMort = (Texture2D)tempMat.mainTexture;
         tempMat.mainTexture = texMort;

@@ -565,9 +565,9 @@ public class Web : MonoBehaviour
     /// The dimensions are extracted from the tile libelle, since it is part of it.
     /// </summary>
     /// <returns>A List containting 2 integers, which are the dimensions of the tile</returns>
-    public List<int> GetTileDimensionsFromLibelle(string libelle)
+    public List<double> GetTileDimensionsFromLibelle(string libelle)
     {
-        List<int> dimensions = new List<int>();
+        List<double> dimensions = new List<double>();
         string[] libelleList = libelle.Split(' ');
         string[] dimList = { };
         foreach (string item in libelleList)
@@ -584,10 +584,10 @@ public class Web : MonoBehaviour
         }
         foreach (string item in dimList)
         {
-            int convertedDim;
-            if (Int32.TryParse(item, out convertedDim))
+            double convertedDim;
+            if (Double.TryParse(item, out convertedDim))
             {
-                dimensions.Add(convertedDim);
+                dimensions.Add(convertedDim/100.0);
             }
             else
             {

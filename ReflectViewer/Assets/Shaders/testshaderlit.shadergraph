@@ -1220,7 +1220,7 @@
     },
     "m_Name": "TileSize",
     "m_DefaultReferenceName": "Vector2_26d3545830714817916bb86bfa1de021",
-    "m_OverrideReferenceName": "",
+    "m_OverrideReferenceName": "_TileSize",
     "m_GeneratePropertyBlock": true,
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,

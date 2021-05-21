@@ -58,9 +58,8 @@ public class Web : MonoBehaviour
 
     private void Update()
     {
-        // TODO UIStateManager
+        //UIStateManager.sta
         // Try to access m_UImanager
-        // what is a partial class
         if (GameObject.Find("Root").transform.childCount > 1 && !buildingTableCreated)
         {
             StartCoroutine(createBuildingTable());
@@ -121,7 +120,8 @@ public class Web : MonoBehaviour
             var meta = go.GetComponent<Metadata>();
             if (meta != null)
             {
-                if (go.name.Contains("Wall") || meta.GetParameter("Category").Contains("Wall") || go.name.Contains("Floor") || meta.GetParameter("Category").Contains("Floor"))
+                if ((go.name.Contains("Wall") || meta.GetParameter("Category").Contains("Wall") || go.name.Contains("Floor") || meta.GetParameter("Category").Contains("Floor"))
+                    && (meta.GetParameter("Id").Length > 0))
                 {
                     surfaceIDs.Add(meta.GetParameter("Id"));
                     surfaceArea.Add(meta.GetParameter("Area"));

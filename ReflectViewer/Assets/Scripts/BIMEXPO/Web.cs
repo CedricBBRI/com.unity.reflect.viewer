@@ -60,10 +60,21 @@ public class Web : MonoBehaviour
     {
         //UIStateManager.sta
         // Try to access m_UImanager
-        if (GameObject.Find("Root").transform.childCount > 1 && !buildingTableCreated)
+        if (GameObject.Find("Root").transform.Find("Cube") == null)
         {
-            StartCoroutine(createBuildingTable());
-            buildingTableCreated = true;
+            if (GameObject.Find("Root").transform.childCount > 0 && !buildingTableCreated)
+            {
+                StartCoroutine(createBuildingTable());
+                buildingTableCreated = true;
+            }
+        }
+        else
+        {
+            if (GameObject.Find("Root").transform.childCount > 1 && !buildingTableCreated)
+            {
+                StartCoroutine(createBuildingTable());
+                buildingTableCreated = true;
+            }
         }
     }
 

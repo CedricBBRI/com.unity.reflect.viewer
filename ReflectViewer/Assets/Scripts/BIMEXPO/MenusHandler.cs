@@ -101,6 +101,7 @@ public class MenusHandler : MonoBehaviour
         //surf.GetComponent<Material>().SetColor("_Color", Color.red);
         surf.GetComponent<Renderer>().material.SetColor("_Color", Color.red);
     }
+    */
 
     void ActivateCommentMenu()
     {
@@ -111,7 +112,7 @@ public class MenusHandler : MonoBehaviour
             if (go.name == "CommentMenu")
             {
                 //Disable player camera rotation until the preselection is made
-                GameObject.FindGameObjectWithTag("Player").GetComponent<FirstPersonController>().cameraCanMove = false;
+                //GameObject.FindGameObjectWithTag("Player").GetComponent<FirstPersonController>().cameraCanMove = false;
 
                 //Show menu
                 go.SetActive(true);
@@ -120,5 +121,4 @@ public class MenusHandler : MonoBehaviour
             }
         }
     }
-    */
 }

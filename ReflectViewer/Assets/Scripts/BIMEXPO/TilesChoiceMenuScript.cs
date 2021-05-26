@@ -221,5 +221,6 @@ public class TilesChoiceMenuScript : MonoBehaviour
             myBox.Remove(item);
         }
         GameObject.Find("TileChoiceMenu").SetActive(false);
+        GetComponent<MenusHandler>().m_MyEvent.RemoveAllListeners();
     }
 }

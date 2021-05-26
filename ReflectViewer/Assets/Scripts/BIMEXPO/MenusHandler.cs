@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 public class MenusHandler : MonoBehaviour
 {
     public GameObject hitSurface = null;    // The surface clicked by the user.
-    UnityEvent m_MyEvent = new UnityEvent();
+    public UnityEvent m_MyEvent = new UnityEvent();
     private bool preselectionButtonOn = false;
 
     private void Update()
@@ -19,49 +19,13 @@ public class MenusHandler : MonoBehaviour
         }
 
         bool preselectionDone = GameObject.Find("Root").GetComponent<Web>().preselectionDone;
-        // Watch out for user click in order to assign a material to a surface
 
-        // ---------------------------------------------------------------------------------------------------------------------------
-        // 12/05/2021 - AC: This code will be merged with Cedric's. I comment thus this part that is supposed to bring the tiles menu.
-        // ---------------------------------------------------------------------------------------------------------------------------
-
-        /*
-        if (Input.GetMouseButtonDown(1) && preselectionDone)
+        // Look out for comments input, only if the tile choice menu is already up
+        var tcm = GameObject.Find("TileChoiceMenu");
+        if (tcm != null && Input.GetMouseButtonDown(2) && m_MyEvent != null)
         {
-            RaycastHit hit; // Infos about the hit
-
-            //Filter walls and slabs only
-            int layerMask = LayerMask.GetMask("Default");
-
-            //Shoot the ray towards the mouse position
-            Ray rayToMouse = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            // Does the ray intersect any objects excluding the player layer
-            if (Physics.Raycast(rayToMouse, out hit, Mathf.Infinity, layerMask))
-            {
-                hitSurface = hit.collider.gameObject;
-                //HighlightSurface(hitSurface);
-                ActivateTilesChoiceMenu();
-
-                //Adding event listener so that if user clicks middle button when surface is selected, comment box appears
-                //m_MyEvent.AddListener(ActivateCommentMenu);
-            }
-            else
-            {
-                Debug.Log("No hit");
-                m_MyEvent.RemoveAllListeners();
-            }
-        }
-        else if (Input.GetMouseButtonDown(1) && !preselectionDone)
-        {
-            Debug.LogWarning("La présélection des carrelages n'a pas encore été faite!");
-        }
-        if (Input.GetMouseButtonDown(2) && m_MyEvent != null)
-        {
-            //Begin the action
             m_MyEvent.Invoke();
         }
-        */
     }
 
     IEnumerator ShowButtons()
@@ -93,15 +57,8 @@ public class MenusHandler : MonoBehaviour
                 break;
             }
         }
+        m_MyEvent.AddListener(ActivateCommentMenu);
     }
-    /*
-
-    void HighlightSurface(GameObject surf)
-    {
-        //surf.GetComponent<Material>().SetColor("_Color", Color.red);
-        surf.GetComponent<Renderer>().material.SetColor("_Color", Color.red);
-    }
-    */
 
     void ActivateCommentMenu()
     {

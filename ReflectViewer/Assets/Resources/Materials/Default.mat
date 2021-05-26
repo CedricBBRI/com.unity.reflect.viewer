@@ -148,10 +148,11 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - Vector1_10D9C905: 0.3
-    - Vector1_2323e2361df0404ab6dbac83ca28a6d7: 0
-    - Vector1_513cac809738437ca5a98fa2147e57c0: 0.02
+    - Vector1_2323e2361df0404ab6dbac83ca28a6d7: 0.5
+    - Vector1_513cac809738437ca5a98fa2147e57c0: 0.03
     - Vector1_57362EB6: 0.03
     - Vector1_92CD0678: 4
+    - Vector1_c5788da938914662b2086174c9312b05: 0.61
     - _AlphaClip: 0
     - _Blend: 0
     - _BlendOp: 0
@@ -221,4 +222,5 @@ Material:
     - _SPECULAR_COLOR: {r: 1, g: 1, b: 1, a: 0}
     - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
+    - _TileSize: {r: 0.2, g: 0.1, b: 0, a: 0}
   m_BuildTextureStacks: []

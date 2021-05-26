@@ -26,6 +26,10 @@ public class MenusHandler : MonoBehaviour
         {
             m_MyEvent.Invoke();
         }
+        else if (tcm = null)
+        {
+            m_MyEvent.RemoveAllListeners();
+        }
     }
 
     IEnumerator ShowButtons()

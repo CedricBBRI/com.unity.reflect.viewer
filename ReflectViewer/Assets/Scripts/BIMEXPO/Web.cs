@@ -58,7 +58,13 @@ public class Web : MonoBehaviour
 
     private void Update()
     {
-        //UIStateManager.sta
+        //UIStateManager myUIState = new UIStateManager();
+        //UIStateData usd = myUIState.stateData;
+        //int cp = usd.progressData.currentProgress;
+
+        //Debug.Log("DEBUG UI STATE: " + cp);
+
+        //m_UIStateData
         // Try to access m_UImanager
         if (GameObject.Find("Root").transform.Find("Cube") == null)
         {

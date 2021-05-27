@@ -230,6 +230,19 @@ namespace UnityEngine.Reflect
             return matPoss;
         }
 
+        /// <summary>
+        /// Apply an outline around object
+        /// </summary>
+        /// <param name="obj">The GameObject to be highlighted</param>
+        private void HighlightObject(GameObject obj)
+        {
+            var outline = obj.AddComponent<OutlineUI>();
+
+            outline.OutlineMode = OutlineUI.Mode.OutlineAll;
+            outline.OutlineColor = Color.yellow;
+            outline.OutlineWidth = 5f;
+        }
+
         public void ChangeMaterialClick(Material mat, GameObject selectedObject) //Changes materials (all of them) of selectedObject to mat
         {
             functionReplaceCalled = true;
@@ -239,6 +252,8 @@ namespace UnityEngine.Reflect
                 mat = matPoss[0];
             }
             //TEST
+
+            HighlightObject(selectedObject);
 
             // AC - 19/05/21 - Here bring up my menu offering the possibility of choosing the material to apply.
             var menuHandler = GameObject.Find("Root").GetComponent<MenusHandler>();

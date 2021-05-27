@@ -58,7 +58,13 @@ public class Web : MonoBehaviour
 
     private void Update()
     {
-        //UIStateManager.sta
+        //UIStateManager myUIState = new UIStateManager();
+        //UIStateData usd = myUIState.stateData;
+        //int cp = usd.progressData.currentProgress;
+
+        //Debug.Log("DEBUG UI STATE: " + cp);
+
+        //m_UIStateData
         // Try to access m_UImanager
         if (GameObject.Find("Root").transform.Find("Cube") == null)
         {
@@ -664,5 +670,100 @@ public class Web : MonoBehaviour
         {
             throw new Exception("Couldn't extract the tile price from the DB!");
         }
+    }
+
+    public void saveComment(string comment, GameObject surface)
+    {
+        // Getting surface ID
+        var meta = surface.GetComponent<Metadata>();
+        string surfaceID = null;
+        if (meta != null)
+        {
+            surfaceID = meta.GetParameter("Id");
+        }
+        else
+        {
+            throw new Exception("No Id parameter found on surface!");
+        }
+
+        string phpScript = "http://bimexpo/CreateComment.php";
+        WWWForm form = new WWWForm();
+        form.AddField("projectId", projectId);
+        form.AddField("clientId", clientId);
+        form.AddField("comment", comment);
+        form.AddField("surfaceID", surfaceID);
+
+        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        {
+            www.SendWebRequest();
+            while (www.result == UnityWebRequest.Result.InProgress)
+            {
+                // Just wait
+            }
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                string receivedTilesString = www.downloadHandler.text;
+            }
+        }
+    }
+
+    public string GetComment(GameObject surface)
+    {
+        // Getting surface ID
+        var meta = surface.GetComponent<Metadata>();
+        string surfaceID = null;
+        if (meta != null)
+        {
+            surfaceID = meta.GetParameter("Id");
+        }
+        else
+        {
+            throw new Exception("No Id parameter found on surface!");
+        }
+
+        string phpScript = "http://bimexpo/GetComment.php";
+        string[] phpReturnedList = { };
+        WWWForm form = new WWWForm();
+        form.AddField("projectId", projectId);
+        form.AddField("clientId", clientId);
+        form.AddField("surfaceID", surfaceID);
+
+        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        {
+            www.SendWebRequest();
+            while (www.result == UnityWebRequest.Result.InProgress)
+            {
+                // Just wait
+            }
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                string receivedTilesString = www.downloadHandler.text;
+                phpReturnedList = receivedTilesString.Split(';');
+            }
+        }
+
+        bool startRecordingResults = false;
+        string comment = "";
+
+        foreach (string item in phpReturnedList)
+        {
+            if (startRecordingResults)
+            {
+                comment = item;
+            }
+            if (item.Contains("RETURNS"))
+            {
+                startRecordingResults = true;
+            }
+        }
+        return comment;
     }
 }

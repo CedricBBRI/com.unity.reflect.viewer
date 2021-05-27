@@ -711,6 +711,53 @@ public class Web : MonoBehaviour
         }
     }
 
+    public void saveScreenshot(string filename, Vector3 position, Quaternion rotation, GameObject targetSurface)
+    {
+        // Getting surface ID
+        var meta = targetSurface.GetComponent<Metadata>();
+        string surfaceID = null;
+        if (meta != null)
+        {
+            surfaceID = meta.GetParameter("Id");
+        }
+        else
+        {
+            throw new Exception("No Id parameter found on surface!");
+        }
+
+        string phpScript = "http://bimexpo/SaveScreenshot.php";
+        WWWForm form = new WWWForm();
+        form.AddField("projectId", projectId);
+        form.AddField("clientId", clientId);
+        form.AddField("filename", filename);
+        form.AddField("surfaceID", surfaceID);
+        form.AddField("positionX", position.x.ToString());
+        form.AddField("positionY", position.y.ToString());
+        form.AddField("positionZ", position.z.ToString());
+        form.AddField("rotationX", rotation.x.ToString());
+        form.AddField("rotationY", rotation.y.ToString());
+        form.AddField("rotationZ", rotation.z.ToString());
+        // Should I also use the Quaternion w component of the rotation? Don't care for the moment.
+
+
+        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        {
+            www.SendWebRequest();
+            while (www.result == UnityWebRequest.Result.InProgress)
+            {
+                // Just wait
+            }
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                Debug.Log(www.downloadHandler.text);
+            }
+        }
+    }
+
     public string GetComment(GameObject surface)
     {
         // Getting surface ID

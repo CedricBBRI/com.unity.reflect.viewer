@@ -1,10 +1,13 @@
 using UnityEngine.UIElements;
 using UnityEngine;
 using UnityEngine.Reflect;
+using System.IO;
+using System.Reflection;
+using System.Collections;
 
 public class CommentMenuScript : MonoBehaviour
 {
-    private Button validateButton;
+    private Button validateButton, screenshotButton;
     private TextField txtField;
     private GameObject target;
 
@@ -15,9 +18,11 @@ public class CommentMenuScript : MonoBehaviour
         
         var rootVisualElement = GetComponent<UIDocument>().rootVisualElement;
         validateButton = rootVisualElement.Q<Button>("ok-button");
+        screenshotButton = rootVisualElement.Q<Button>("screenshot");
         txtField = rootVisualElement.Q<TextField>("txtField");
         txtField.label = target.name;
         validateButton.RegisterCallback<ClickEvent>(ev => saveComment(target));
+        screenshotButton.clicked += saveScreenshotWrapper;
 
         // Recuperate the comment if one already exists
         var webScript = GameObject.Find("Root").GetComponent<Web>();
@@ -31,5 +36,45 @@ public class CommentMenuScript : MonoBehaviour
         var webScript = GameObject.Find("Root").GetComponent<Web>();
         webScript.saveComment(comment, target);
         GameObject.Find("CommentMenu").SetActive(false);
+    }
+
+    void saveScreenshotWrapper()
+    {
+        StartCoroutine(saveScreenshot());
+    }
+
+    IEnumerator saveScreenshot()
+    {
+        // Get camera coordinates and orientation
+        Transform cam = GameObject.FindGameObjectWithTag("MainCamera").transform;
+        Vector3 camPos = cam.position;
+        Quaternion camRot = cam.rotation;
+
+        // Define the name of the file
+        string filename = "test.png";
+
+        // Make the screenshot
+        string currentDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        string gitRootDir = Directory.GetParent(currentDir).Parent.Parent.FullName;
+        string screenshotsDir = gitRootDir + "\\pictures_screenshots\\";
+        
+        // Wait till the last possible moment before screen rendering to hide the UI
+        yield return null;
+        GameObject.Find("CommentMenu").GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("root-ve").style.display = DisplayStyle.None;
+        GameObject.Find("TileChoiceMenu").GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("menu").style.display = DisplayStyle.None;
+
+        // Wait for screen rendering to complete
+        yield return new WaitForEndOfFrame();
+
+        // Take screenshot
+        ScreenCapture.CaptureScreenshot(screenshotsDir + filename);
+
+        // Show UI after we're done
+        GameObject.Find("CommentMenu").GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("root-ve").style.display = DisplayStyle.Flex;
+        GameObject.Find("TileChoiceMenu").GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("menu").style.display = DisplayStyle.Flex;
+
+        // Save it to DB
+        var webScript = GameObject.Find("Root").GetComponent<Web>();
+        webScript.saveScreenshot(filename, camPos, camRot, target);
     }
 }

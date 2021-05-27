@@ -23,6 +23,7 @@ build.bat.meta
 [Ll]ogs/
 [Oo]bj/
 Packages/com.unity.mars/
+PHP/screenshots/**
 
 *.csproj
 *.csproj.meta

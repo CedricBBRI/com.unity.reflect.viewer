@@ -139,18 +139,6 @@ public class TilesChoiceMenuScript : MonoBehaviour
                 Debug.Log(www.downloadHandler.text);
             }
         }
-
-
-
-
-        //string path = @"c:\users\aca\Documents\Projects\BIMEXPO\pictures_carrelages\" + webScript.GetTexturePathFromName(chosenMaterial);
-        //webScript.changeMaterial(target, path);
-        //Get the ID of the surface from Metadata script
-        //string surfaceId = target.GetComponent<dummyMetadataScript>().ID.ToString();
-        //Get the tile ID from its name
-        //string tileId = webScript.GetTileIdFromName(chosenMaterial);
-        //Save the user choice to DB
-        //webScript.SaveUserChoiceToDB(tileId, surfaceId);
     }
 
     void PopulateMenu()

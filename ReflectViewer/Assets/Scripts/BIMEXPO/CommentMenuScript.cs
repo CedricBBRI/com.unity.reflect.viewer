@@ -22,7 +22,7 @@ public class CommentMenuScript : MonoBehaviour
         txtField = rootVisualElement.Q<TextField>("txtField");
         txtField.label = target.name;
         validateButton.RegisterCallback<ClickEvent>(ev => saveComment(target));
-        screenshotButton.clicked += saveScreenshotWrapper;
+        screenshotButton.RegisterCallback<ClickEvent>(ev => saveScreenshotWrapper(target));
 
         // Recuperate the comment if one already exists
         var webScript = GameObject.Find("Root").GetComponent<Web>();
@@ -38,12 +38,12 @@ public class CommentMenuScript : MonoBehaviour
         GameObject.Find("CommentMenu").SetActive(false);
     }
 
-    void saveScreenshotWrapper()
+    void saveScreenshotWrapper(GameObject surface)
     {
-        StartCoroutine(saveScreenshot());
+        StartCoroutine(saveScreenshot(surface));
     }
 
-    IEnumerator saveScreenshot()
+    IEnumerator saveScreenshot(GameObject surface)
     {
         // Get camera coordinates and orientation
         Transform cam = GameObject.FindGameObjectWithTag("MainCamera").transform;
@@ -51,12 +51,21 @@ public class CommentMenuScript : MonoBehaviour
         Quaternion camRot = cam.rotation;
 
         // Define the name of the file
-        string filename = "test.png";
+        string filename;
+        var meta = surface.GetComponent<Metadata>();
+        if (meta != null)
+        {
+            filename = meta.GetParameter("Id") + ".png";
+        }
+        else
+        {
+            throw new System.Exception("No Id attached to surface!");
+        }
 
         // Make the screenshot
         string currentDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         string gitRootDir = Directory.GetParent(currentDir).Parent.Parent.FullName;
-        string screenshotsDir = gitRootDir + "\\pictures_screenshots\\";
+        string screenshotsDir = gitRootDir + "\\PHP\\screenshots\\";
         
         // Wait till the last possible moment before screen rendering to hide the UI
         yield return null;

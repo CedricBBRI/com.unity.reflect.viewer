@@ -71,6 +71,7 @@ public class Web : MonoBehaviour
             if (GameObject.Find("Root").transform.childCount > 0 && !buildingTableCreated)
             {
                 StartCoroutine(createBuildingTable());
+                StartCoroutine(SetDefaultMaterials());
                 buildingTableCreated = true;
             }
         }
@@ -79,6 +80,7 @@ public class Web : MonoBehaviour
             if (GameObject.Find("Root").transform.childCount > 1 && !buildingTableCreated)
             {
                 StartCoroutine(createBuildingTable());
+                StartCoroutine(SetDefaultMaterials());
                 buildingTableCreated = true;
             }
         }
@@ -812,6 +814,35 @@ public class Web : MonoBehaviour
             }
         }
         return comment;
+    }
+
+    /// <summary>
+    /// Automatically sets default materials on the building, based on materials identified as such in the DB.
+    /// </summary>
+    private IEnumerator SetDefaultMaterials()
+    {
+        // Wait for building to be fully loaded
+        yield return new WaitForSeconds(5);
+
+        // Load brick material
+        GameObject root = GameObject.Find("Root");
+        Component[] children = root.GetComponentsInChildren(typeof(Transform));
+        Material bricks = Resources.Load<Material>("bricks_4k/bricks_4k_materials/brick_4");
+        bricks.shader = Shader.Find("Unlit/Texture");
+
+        // Detect brick walls and apply material
+        foreach (Transform tr in children)
+        {
+            var meta = tr.gameObject.GetComponent<Metadata>();
+            if (meta != null)
+            {
+                if (meta.GetParameter("Type").Contains("Brique"))
+                {
+                    tr.gameObject.GetComponent<MeshRenderer>().material = bricks;
+                }
+            }
+        }
+        yield return null;
     }
 
     /// <summary>

@@ -11,7 +11,7 @@ using Unity.Reflect.Viewer.UI;
 
 public class Web : MonoBehaviour
 {
-    private bool buildingTableCreated = false;
+    private bool tablesCreated = false;
     private bool localPreselectionDone = false;
     public bool preselectionDone { get { return localPreselectionDone; } }
     public string texturePath { get; set; }
@@ -53,7 +53,20 @@ public class Web : MonoBehaviour
                 go.SetActive(true);
             }
         }
+        UIStateManager.stateChanged += UIStateManager_stateChanged; // Listening to UI state change in order to know when the building is loaded.
+    }
 
+    private void UIStateManager_stateChanged(UIStateData obj)
+    {
+        if (obj.progressData.totalCount > 0 && obj.progressData.currentProgress == obj.progressData.totalCount)    // Then the building is fully loaded
+        {
+            if (!tablesCreated)
+            {
+                StartCoroutine(createBuildingTable());
+                StartCoroutine(SetDefaultMaterials());
+                tablesCreated = true;
+            }
+        }
     }
 
     private void Update()
@@ -66,6 +79,7 @@ public class Web : MonoBehaviour
 
         //m_UIStateData
         // Try to access m_UImanager
+        /*
         if (GameObject.Find("Root").transform.Find("Cube") == null)
         {
             if (GameObject.Find("Root").transform.childCount > 0 && !buildingTableCreated)
@@ -84,6 +98,7 @@ public class Web : MonoBehaviour
                 buildingTableCreated = true;
             }
         }
+        */
     }
 
     IEnumerator CreateUserChoicesTable()
@@ -821,9 +836,6 @@ public class Web : MonoBehaviour
     /// </summary>
     private IEnumerator SetDefaultMaterials()
     {
-        // Wait for building to be fully loaded
-        yield return new WaitForSeconds(5);
-
         // Identify the material for outdoor walls, from DB
         WWWForm form = new WWWForm();
         form.AddField("surface_type", "mur");

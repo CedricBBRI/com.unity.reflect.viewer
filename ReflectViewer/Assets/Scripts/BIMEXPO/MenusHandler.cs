@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UIElements;
+using Unity.Reflect.Viewer.UI;
 
 public class MenusHandler : MonoBehaviour
 {
@@ -9,14 +10,31 @@ public class MenusHandler : MonoBehaviour
     public UnityEvent m_MyEvent = new UnityEvent();
     private bool preselectionButtonOn = false;
 
+    private void Start()
+    {
+       UIStateManager.stateChanged += UIStateManager_stateChanged; // Listening to UI state change in order to know when the building is loaded.
+    }
+    private void UIStateManager_stateChanged(UIStateData obj)
+    {
+        if (obj.progressData.totalCount > 0 && obj.progressData.currentProgress == obj.progressData.totalCount)    // Then the building is fully loaded
+        {
+            if (!preselectionButtonOn)
+            {
+                ShowButtons();
+                preselectionButtonOn = true;
+            }
+        }
+    }
     private void Update()
     {
+        /*
         //Wait for the building to be loaded, then show the preselection button
         if (GameObject.Find("Root").transform.childCount > 0 && !preselectionButtonOn)
         {
             StartCoroutine(ShowButtons());
             preselectionButtonOn = true;
         }
+        */
 
         bool preselectionDone = GameObject.Find("Root").GetComponent<Web>().preselectionDone;
 
@@ -32,10 +50,8 @@ public class MenusHandler : MonoBehaviour
         }
     }
 
-    IEnumerator ShowButtons()
+    void ShowButtons()
     {
-        yield return new WaitForSeconds(5);
-
         GameObject preselectionUI = GameObject.Find("PreselectionMenu");
         var rootVisualElement = preselectionUI.GetComponent<UIDocument>().rootVisualElement;
         Button showHideMenu = rootVisualElement.Q<Button>("show-hide-menu");

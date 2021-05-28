@@ -40,8 +40,10 @@ public class MenusHandler : MonoBehaviour
         var rootVisualElement = preselectionUI.GetComponent<UIDocument>().rootVisualElement;
         Button showHideMenu = rootVisualElement.Q<Button>("show-hide-menu");
         Button amendment = rootVisualElement.Q<Button>("produce-amendment");
+        Button restore = rootVisualElement.Q<Button>("restore-previous");
         showHideMenu.style.display = DisplayStyle.Flex;
         amendment.style.display = DisplayStyle.Flex;
+        restore.style.display = DisplayStyle.Flex;
     }
 
     /// <summary>

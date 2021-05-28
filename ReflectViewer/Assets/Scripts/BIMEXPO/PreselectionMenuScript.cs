@@ -9,7 +9,7 @@ using System.Collections.ObjectModel;
 public class PreselectionMenuScript : MonoBehaviour
 {
     private VisualElement myBox, mainMenu;
-    private Button okButton, showHideMenuButton, produceAmendmentButton;
+    private Button okButton, showHideMenuButton, produceAmendmentButton, restoreButton;
     private List<string> localSelectedTiles = new List<string>();
     public ReadOnlyCollection<string> selectedTiles { get { return localSelectedTiles.AsReadOnly(); } } // selectedTiles can be read but not modified outside this class
     private Toggle wallToggle, slabToggle;
@@ -37,6 +37,9 @@ public class PreselectionMenuScript : MonoBehaviour
         // Also handling the amendment production from this menu
         produceAmendmentButton = rootVisualElement.Q<Button>("produce-amendment");
 
+        // And the restoration of previous choices
+        restoreButton = rootVisualElement.Q<Button>("restore-previous");
+
         // Register callbacks
         var webScript = GameObject.Find("Root").GetComponent<Web>();
         showHideMenuButton.clicked += ShowHidePreselectionMenu;
@@ -45,6 +48,7 @@ public class PreselectionMenuScript : MonoBehaviour
         wallToggle.RegisterCallback<ClickEvent>(ev => StartCoroutine(UpdateDisplay()));
         slabToggle.RegisterCallback<ClickEvent>(ev => StartCoroutine(UpdateDisplay()));
         produceAmendmentButton.clicked += webScript.ProduceAmendmentWrapper;            // Can't directly use a coroutine in an action, so it's wrapped inside a function.
+        restoreButton.clicked += webScript.RestorePreviousConfig;
 
         var DBScript = GameObject.Find("Root").GetComponent<DBInteractions>();
 

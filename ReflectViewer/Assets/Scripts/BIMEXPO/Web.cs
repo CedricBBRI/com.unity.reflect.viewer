@@ -71,6 +71,7 @@ public class Web : MonoBehaviour
             if (GameObject.Find("Root").transform.childCount > 0 && !buildingTableCreated)
             {
                 StartCoroutine(createBuildingTable());
+                StartCoroutine(SetDefaultMaterials());
                 buildingTableCreated = true;
             }
         }
@@ -79,6 +80,7 @@ public class Web : MonoBehaviour
             if (GameObject.Find("Root").transform.childCount > 1 && !buildingTableCreated)
             {
                 StartCoroutine(createBuildingTable());
+                StartCoroutine(SetDefaultMaterials());
                 buildingTableCreated = true;
             }
         }
@@ -812,6 +814,75 @@ public class Web : MonoBehaviour
             }
         }
         return comment;
+    }
+
+    /// <summary>
+    /// Automatically sets default materials on the building, based on materials identified as such in the DB.
+    /// </summary>
+    private IEnumerator SetDefaultMaterials()
+    {
+        // Wait for building to be fully loaded
+        yield return new WaitForSeconds(5);
+
+        // Identify the material for outdoor walls, from DB
+        WWWForm form = new WWWForm();
+        form.AddField("surface_type", "mur");
+        form.AddField("in_out", "out");
+        string phpScript = "http://bimexpo/ReadDefaults.php";
+        string[] phpReturnedList = { };
+        string materialName = "";
+
+        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        {
+            www.SendWebRequest();
+            while (www.result == UnityWebRequest.Result.InProgress)
+            {
+                // Just wait
+            }
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                string receivedTilesString = www.downloadHandler.text;
+                phpReturnedList = receivedTilesString.Split(';');
+            }
+        }
+        bool startRecordingResults = false;
+        foreach (string item in phpReturnedList)
+        {
+            if (startRecordingResults)
+            {
+                materialName = item;
+            }
+            if (item.Contains("RETURNS"))
+            {
+                startRecordingResults = true;
+            }
+        }
+
+        materialName = "bricks_4k/bricks_4k_materials/" + materialName; // This is just to demonstrate it works. Later use something less hardcoded..
+
+        // Load the material
+        GameObject root = GameObject.Find("Root");
+        Component[] children = root.GetComponentsInChildren(typeof(Transform));
+        Material bricks = Resources.Load<Material>(materialName);
+        bricks.shader = Shader.Find("Unlit/Texture");
+
+        // Detect brick walls and apply material
+        foreach (Transform tr in children)
+        {
+            var meta = tr.gameObject.GetComponent<Metadata>();
+            if (meta != null)
+            {
+                if (meta.GetParameter("Type").Contains("Brique"))
+                {
+                    tr.gameObject.GetComponent<MeshRenderer>().material = bricks;
+                }
+            }
+        }
+        yield return null;
     }
 
     /// <summary>

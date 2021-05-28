@@ -105,7 +105,51 @@ public class TilesChoiceMenuScript : MonoBehaviour
         target.GetComponent<MeshRenderer>().material = tempMat;
         return;
     }
-    
+
+    public void ApplyMaterialToSurface(string materialName, GameObject surface)
+    {
+        var webScript = GameObject.Find("Root").GetComponent<Web>();
+
+        // Get the tile dimensions
+        List<double> tileDimensions = new List<double>();
+        try
+        {
+            tileDimensions = webScript.GetTileDimensionsFromLibelle(materialName);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError(e.Message);
+            throw;
+        }
+
+        string materialTexturePath = webScript.GetTexturePathFromNameM(materialName);
+        string currentDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        string tilePicturesFolder = Directory.GetParent(currentDir).Parent.Parent.FullName + "\\pictures_carrelages\\";
+        materialTexturePath = tilePicturesFolder + materialTexturePath;
+
+        // Then continue with material application onto surface
+        var texture = webScript.LoadTextureFromDiskFolder(materialTexturePath);
+        Vector4 tileDimVect = new Vector4((float)tileDimensions[0], (float)tileDimensions[1], 0f, 0f);
+        Material tempMat = new Material(Shader.Find("Shader Graphs/testshaderlit"));
+        tempMat.mainTexture = texture;
+        tempMat.SetVector("_TileSize", tileDimVect);
+
+        Texture2D texMort = (Texture2D)tempMat.mainTexture;
+        tempMat.mainTexture = texMort;
+
+        foreach (Renderer rend in surface.GetComponents<Renderer>())
+        {
+            var mats = new Material[rend.sharedMaterials.Length];
+            for (var j = 0; j < rend.sharedMaterials.Length; j++)
+            {
+                mats[j] = tempMat;
+            }
+            rend.sharedMaterials = mats;
+        }
+        surface.GetComponent<MeshRenderer>().material = tempMat;
+        return;
+    }
+
     /// <summary>
     /// Saves the choice of a tile on a given surface. This will save the choice in the DB.
     /// </summary>

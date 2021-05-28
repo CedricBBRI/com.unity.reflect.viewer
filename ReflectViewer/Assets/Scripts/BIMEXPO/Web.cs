@@ -813,4 +813,81 @@ public class Web : MonoBehaviour
         }
         return comment;
     }
+
+    /// <summary>
+    /// Restores the previous choices a user may have done in another session.
+    /// These choices are retrieved from DB and overwrite any choices in the current session.
+    /// </summary>
+    public void RestorePreviousConfig()
+    {
+        string phpScript = "http://bimexpo/GetChoices.php";
+        string[] phpReturnedList = { };
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", clientId);
+        form.AddField("projectId", projectId);
+        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        {
+            www.SendWebRequest();
+            while (www.result == UnityWebRequest.Result.InProgress)
+            {
+                // Just wait
+            }
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                string receivedTilesString = www.downloadHandler.text;
+                phpReturnedList = receivedTilesString.Split(';');
+            }
+        }
+        bool startRecordingResults = false;
+        List<List<string>> idsAndLibelle = new List<List<string>>();
+        foreach (string item in phpReturnedList)
+        {
+            if (startRecordingResults)
+            {
+                string[] id_libelle = item.Split(',');
+                List<string> subList = new List<string>();
+                foreach (string item2 in id_libelle)
+                {
+                    subList.Add(item2);
+                }
+                idsAndLibelle.Add(subList);
+            }
+            if (item.Contains("RETURNS"))
+            {
+                startRecordingResults = true;
+            }
+        }
+
+        // Now actually restore it
+        GameObject root = GameObject.Find("Root");
+        TilesChoiceMenuScript tcms = null;
+        foreach (GameObject go in Resources.FindObjectsOfTypeAll<GameObject>())
+        {
+            if (go.name == "TileChoiceMenu")
+            {
+                tcms = go.GetComponent<TilesChoiceMenuScript>();
+            }
+        }
+
+        foreach (List<string> item in idsAndLibelle)
+        {
+            Component[] children = root.GetComponentsInChildren(typeof(Transform));
+            foreach (Transform tr in children)
+            {
+                var meta = tr.gameObject.GetComponent<Metadata>();
+                if (meta != null)
+                {
+                    if (meta.GetParameter("Id") == item[0])
+                    {
+                        tcms.ApplyMaterialToSurface(item[1], tr.gameObject);
+                        continue;
+                    }
+                }
+            }
+        }
+    }
 }

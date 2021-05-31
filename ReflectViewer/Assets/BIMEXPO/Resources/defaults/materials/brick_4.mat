@@ -8,7 +8,8 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: brick_4
-  m_Shader: {fileID: 10752, guid: 0000000000000000f000000000000000, type: 0}
+  m_Shader: {fileID: -6465566751694194690, guid: e60de7b494ae14426ba7f7bb8a58560a,
+    type: 3}
   m_ShaderKeywords: _NORMALMAP
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -68,7 +69,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: b5889fce6f5570a4baaf023b45dbea50, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -80,7 +81,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SmoothnessMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 453049a3b267ff3438fec3884ae3f5b7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
@@ -183,11 +184,11 @@ Material:
     - _UVSec: 0
     - _UpVectorPitch: 0
     - _UpVectorYaw: 0
-    - _UseAlbedoMap: 0
+    - _UseAlbedoMap: 1
     - _UseEmissionMap: 0
     - _UseMetallicMap: 0
-    - _UseNormalMap: 0
-    - _UseSmoothnessMap: 0
+    - _UseNormalMap: 1
+    - _UseSmoothnessMap: 1
     - _UseUIAlphaClip: 0
     - _VertexOffsetX: 0
     - _VertexOffsetY: 0

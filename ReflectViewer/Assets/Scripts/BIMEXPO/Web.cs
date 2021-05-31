@@ -893,7 +893,9 @@ public class Web : MonoBehaviour
             GameObject root = GameObject.Find("Root");
             Component[] children = root.GetComponentsInChildren(typeof(Transform));
             Material matToApply = Resources.Load<Material>("defaults/materials/" + subList[2]);
-            matToApply.shader = Shader.Find("Unlit/Texture");
+            //matToApply.shader = Shader.Find("Unlit/Texture");
+            matToApply.shader = Shader.Find("UnityReflect/URPOpaque");
+            //matToApply.shader.
 
             // Detect brick walls and apply material
             foreach (Transform tr in children)

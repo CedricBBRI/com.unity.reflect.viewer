@@ -1,20 +1,21 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UIElements;
 using Unity.Reflect.Viewer.UI;
 using UnityEngine.Reflect;
-//using UnityEngine.UI;
 
 public class MenusHandler : MonoBehaviour
 {
     public GameObject hitSurface = null;    // The surface clicked by the user.
     public UnityEvent m_MyEvent = new UnityEvent();
     private bool buildingLoaded = false;
+    private List<string> busyIds = new List<string>();
 
     private void Start()
     {
-       UIStateManager.stateChanged += UIStateManager_stateChanged; // Listening to UI state change in order to know when the building is loaded.
+        UIStateManager.stateChanged += UIStateManager_stateChanged; // Listening to UI state change in order to know when the building is loaded.
     }
     private void UIStateManager_stateChanged(UIStateData obj)
     {
@@ -52,6 +53,22 @@ public class MenusHandler : MonoBehaviour
         else if (tcm = null)
         {
             m_MyEvent.RemoveAllListeners();
+        }
+
+        // Look for surfaces that are not tiled by default (not included in price)
+        RaycastHit hit;
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out hit))
+        {
+            Metadata md = hit.collider.gameObject.GetComponent<Metadata>();
+            if (md != null)
+            {
+                string id = md.GetParameter("Id");
+                if (md.GetParameter("Type").Contains("Plafonnage") && !busyIds.Contains(id))
+                {
+                    StartCoroutine(ShowNonIncludedInfo(hit, id));
+                }
+            }
         }
     }
 
@@ -104,5 +121,30 @@ public class MenusHandler : MonoBehaviour
                 break;
             }
         }
+    }
+
+    /// <summary>
+    /// Method to show to the user the surfaces for which tiles are not included in the price.
+    /// The surface is colored red, then progressively returns to its original color.
+    /// </summary>
+    IEnumerator ShowNonIncludedInfo(RaycastHit hit, string id)
+    {
+        busyIds.Add(id);
+        Material mat = hit.collider.gameObject.GetComponent<Renderer>().material;
+        Color initColor = mat.GetColor("_Tint");    // This will fail if the shader changes
+        yield return null;
+
+        float interp = 0.0f;
+
+        while (interp < 1.0f)
+        {
+            mat.SetColor("_Tint", Color.Lerp(Color.red, initColor, interp));
+            interp += 0.025f;
+            yield return new WaitForSeconds(0.03f);
+        }
+
+        mat.SetColor("_Tint", Color.Lerp(Color.red, initColor, interp));
+        busyIds.Remove(id);
+        yield return null;
     }
 }

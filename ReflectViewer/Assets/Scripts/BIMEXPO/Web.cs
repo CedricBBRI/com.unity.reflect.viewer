@@ -64,6 +64,8 @@ public class Web : MonoBehaviour
             {
                 StartCoroutine(createBuildingTable());
                 StartCoroutine(SetDefaultMaterials());
+                var fao = GameObject.Find("Root").GetComponent<FindAllObjects>();
+                fao.FindAll("Wall");
                 tablesCreated = true;
             }
         }

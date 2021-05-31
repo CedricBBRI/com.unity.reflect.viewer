@@ -28,7 +28,7 @@ namespace UnityEngine.Reflect
         GameObject root; //GameObject under which all imported gameobjects are stored
 
 
-        public void FindAll(InputField strInput)
+        public void FindAll(string strInput)
         {
             if (transformList.Count == 0) //If the elements are not yet detected, then detect them
             {
@@ -46,7 +46,7 @@ namespace UnityEngine.Reflect
                             go.AddComponent<MeshCollider>();
                         }
                         metaList.Add(meta);
-                        if (go.name.Contains(strInput.text)) //Find all elements whose name includes...
+                        if (go.name.Contains(strInput)) //Find all elements whose name includes...
                         {
                             Debug.Log(go.name + "\n");
                         }

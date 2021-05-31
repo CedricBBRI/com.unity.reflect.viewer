@@ -836,64 +836,81 @@ public class Web : MonoBehaviour
     /// </summary>
     private IEnumerator SetDefaultMaterials()
     {
-        // Identify the material for outdoor walls, from DB
-        WWWForm form = new WWWForm();
-        form.AddField("surface_type", "mur");
-        form.AddField("in_out", "out");
-        string phpScript = "http://bimexpo/ReadDefaults.php";
-        string[] phpReturnedList = { };
-        string materialName = "";
+        string[] input1 = { "mur", "out" };
+        string[] input2 = { "mur", "in" };
+        List<List<string>> defaultsList = new List<List<string>>{new List<string> ( input1 ), new List<string>(input2)};
+        int nbItems = defaultsList.Count;   // Do it here to avoid infinite loop
 
-        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        for (int i = 0; i < nbItems; i++)
         {
-            www.SendWebRequest();
-            while (www.result == UnityWebRequest.Result.InProgress)
-            {
-                // Just wait
-            }
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.Log(www.error);
-            }
-            else
-            {
-                string receivedTilesString = www.downloadHandler.text;
-                phpReturnedList = receivedTilesString.Split(';');
-            }
-        }
-        bool startRecordingResults = false;
-        foreach (string item in phpReturnedList)
-        {
-            if (startRecordingResults)
-            {
-                materialName = item;
-            }
-            if (item.Contains("RETURNS"))
-            {
-                startRecordingResults = true;
-            }
-        }
+            List<string> subList = defaultsList[i];
+            // Identify the material for outdoor walls, from DB
+            WWWForm form = new WWWForm();
+            form.AddField("surface_type", subList[0]);
+            form.AddField("in_out", subList[1]);
+            string phpScript = "http://bimexpo/ReadDefaults.php";
+            string[] phpReturnedList = { };
+            string materialName = "";
 
-        materialName = "bricks_4k/bricks_4k_materials/" + materialName; // This is just to demonstrate it works. Later use something less hardcoded..
-
-        // Load the material
-        GameObject root = GameObject.Find("Root");
-        Component[] children = root.GetComponentsInChildren(typeof(Transform));
-        Material bricks = Resources.Load<Material>(materialName);
-        bricks.shader = Shader.Find("Unlit/Texture");
-
-        // Detect brick walls and apply material
-        foreach (Transform tr in children)
-        {
-            var meta = tr.gameObject.GetComponent<Metadata>();
-            if (meta != null)
+            using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
             {
-                if (meta.GetParameter("Type").Contains("Brique"))
+                www.SendWebRequest();
+                while (www.result == UnityWebRequest.Result.InProgress)
                 {
-                    tr.gameObject.GetComponent<MeshRenderer>().material = bricks;
+                    // Just wait
+                }
+                if (www.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.Log(www.error);
+                }
+                else
+                {
+                    string receivedTilesString = www.downloadHandler.text;
+                    phpReturnedList = receivedTilesString.Split(';');
+                }
+            }
+            bool startRecordingResults = false;
+            foreach (string item in phpReturnedList)
+            {
+                if (startRecordingResults)
+                {
+                    materialName = item;
+                }
+                if (item.Contains("RETURNS"))
+                {
+                    startRecordingResults = true;
+                }
+            }
+
+            subList.Add(materialName);
+            defaultsList.Add(subList);
+        }
+        foreach (List<string> subList in defaultsList)
+        {
+            // Load the material
+            GameObject root = GameObject.Find("Root");
+            Component[] children = root.GetComponentsInChildren(typeof(Transform));
+            Material matToApply = Resources.Load<Material>("defaults/materials/" + subList[2]);
+            matToApply.shader = Shader.Find("Unlit/Texture");
+
+            // Detect brick walls and apply material
+            foreach (Transform tr in children)
+            {
+                var meta = tr.gameObject.GetComponent<Metadata>();
+                if (meta != null)
+                {
+                    if (meta.GetParameter("Type").Contains("Brique") && subList[1] == "out")
+                    {
+                        tr.gameObject.GetComponent<MeshRenderer>().material = matToApply;
+                    }
+                    else if (meta.GetParameter("Type").Contains("Carrelage_Mural") && subList[1] == "in")
+                    {
+                        tr.gameObject.GetComponent<MeshRenderer>().material = matToApply;
+                    }
                 }
             }
         }
+        
         yield return null;
     }
 

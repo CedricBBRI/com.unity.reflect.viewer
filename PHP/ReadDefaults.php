@@ -27,7 +27,7 @@ else
 $result->closeCursor();
 
 //Insert comment
-$insertCmd = "REPLACE INTO default_materials VALUES ('brick_4', 'mur', 'out');";
+$insertCmd = "REPLACE INTO default_materials VALUES ('brick_4', 'mur', 'out'), ('Ornamental_Tiles_basecolor1', 'mur','in');";
 $result = $bdd->query($insertCmd);
 
 if ($result->errorCode() == 00000) 

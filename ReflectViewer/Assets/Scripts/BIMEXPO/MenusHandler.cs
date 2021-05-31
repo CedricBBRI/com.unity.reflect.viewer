@@ -3,12 +3,14 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UIElements;
 using Unity.Reflect.Viewer.UI;
+using UnityEngine.Reflect;
+//using UnityEngine.UI;
 
 public class MenusHandler : MonoBehaviour
 {
     public GameObject hitSurface = null;    // The surface clicked by the user.
     public UnityEvent m_MyEvent = new UnityEvent();
-    private bool preselectionButtonOn = false;
+    private bool buildingLoaded = false;
 
     private void Start()
     {
@@ -18,10 +20,13 @@ public class MenusHandler : MonoBehaviour
     {
         if (obj.progressData.totalCount > 0 && obj.progressData.currentProgress == obj.progressData.totalCount)    // Then the building is fully loaded
         {
-            if (!preselectionButtonOn)
+            if (!buildingLoaded)
             {
                 ShowButtons();
-                preselectionButtonOn = true;
+                //InputField strInput = new InputField();
+                //FindAllObjects.FindAll(InputField);
+                // TO DO : change FindAll argument to string, and pass "Wall" to it. Then fire it up from here, and remove the Toggle.
+                buildingLoaded = true;
             }
         }
     }

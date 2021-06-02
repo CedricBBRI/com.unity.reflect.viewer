@@ -833,6 +833,24 @@ public class Web : MonoBehaviour
         return comment;
     }
 
+    private IEnumerator GetJSONResultFromDB(string scriptName, Action<string> callback)
+    {
+        using (UnityWebRequest www = UnityWebRequest.Get(scriptName))
+        {
+            yield return www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                string jsonArray = www.downloadHandler.text;
+                Debug.Log(jsonArray);
+                callback(jsonArray);    // Once the results are obtained, pass them on to callback.
+            }
+        }
+    }
+
     /// <summary>
     /// Automatically sets default materials on the building, based on materials identified as such in the DB.
     /// </summary>
@@ -868,6 +886,7 @@ public class Web : MonoBehaviour
                 else
                 {
                     string receivedTilesString = www.downloadHandler.text;
+                    Debug.Log(receivedTilesString);
                     phpReturnedList = receivedTilesString.Split(';');
                 }
             }

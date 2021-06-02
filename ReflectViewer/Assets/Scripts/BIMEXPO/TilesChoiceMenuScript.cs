@@ -106,6 +106,11 @@ public class TilesChoiceMenuScript : MonoBehaviour
         return;
     }
 
+    /// <summary>
+    /// Applies a material onto a surface.
+    /// </summary>
+    /// <param name="materialName">The libelle of the material to be applied, as a string.</param>
+    /// <param name="surface">The surface onto which the material is to be applied, as a GameObject.</param>
     public void ApplyMaterialToSurface(string materialName, GameObject surface)
     {
         var webScript = GameObject.Find("Root").GetComponent<Web>();

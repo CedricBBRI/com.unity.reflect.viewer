@@ -841,10 +841,20 @@ public class Web : MonoBehaviour
     /// <param name="scriptName">The PHP script to be called via WebRequest.</param>
     /// <param name="callback">The callback function that will be used to retrieve the JSON array via its argument.</param>
     /// <returns></returns>
-    private IEnumerator GetJSONResultFromDBCoroutine(string scriptName, Action<JSONArray> callback)
+    private IEnumerator GetJSONResultFromDBCoroutine(string scriptName, Action<JSONArray> callback, WWWForm form = null)
     {
         string[] phpReturnedList = { };
-        using (UnityWebRequest www = UnityWebRequest.Get(scriptName))
+        UnityWebRequest myWWW;
+        if (form != null)
+        {
+            myWWW = UnityWebRequest.Post(scriptName, form);
+        }
+        else
+        {
+            myWWW = UnityWebRequest.Get(scriptName);
+        }
+
+        using (UnityWebRequest www = myWWW)
         {
             yield return www.SendWebRequest();
             if (www.result != UnityWebRequest.Result.Success)
@@ -1030,48 +1040,32 @@ public class Web : MonoBehaviour
     /// Restores the previous choices a user may have done in another session.
     /// These choices are retrieved from DB and overwrite any choices in the current session.
     /// </summary>
-    public void RestorePreviousConfig()
+    public IEnumerator RestorePreviousConfig()
     {
-        string phpScript = "http://bimexpo/GetChoices.php";
-        string[] phpReturnedList = { };
         WWWForm form = new WWWForm();
         form.AddField("clientId", clientId);
         form.AddField("projectId", projectId);
-        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        string phpScript = "http://bimexpo/GetChoices.php";
+        JSONArray jsonResponse = new JSONArray();
+        bool wait = true;
+        StartCoroutine(GetJSONResultFromDBCoroutine(phpScript, (jsonResult) =>
         {
-            www.SendWebRequest();
-            while (www.result == UnityWebRequest.Result.InProgress)
-            {
-                // Just wait
-            }
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.Log(www.error);
-            }
-            else
-            {
-                string receivedTilesString = www.downloadHandler.text;
-                phpReturnedList = receivedTilesString.Split(';');
-            }
+            jsonResponse = jsonResult; // Recuperate jsonResult (which is the argument of the callback method, passed in inside GetJSONResultFromDB. So it is jsonArray.)
+            wait = false;              // This line is reached only upon callback completion inside GetJSONResultFromDB.
+        }, form));
+
+        while (wait)    // Wait for the call to DB in GetJSONResultFromDB is done, so we're sure we have now retrieved jsonResult inside jsonMaterials.
+        {
+            yield return null;
         }
-        bool startRecordingResults = false;
+
+        // Read the JSON result
         List<List<string>> idsAndLibelle = new List<List<string>>();
-        foreach (string item in phpReturnedList)
+        for (int i = 0; i < jsonResponse.Count; i++)
         {
-            if (startRecordingResults)
-            {
-                string[] id_libelle = item.Split(',');
-                List<string> subList = new List<string>();
-                foreach (string item2 in id_libelle)
-                {
-                    subList.Add(item2);
-                }
-                idsAndLibelle.Add(subList);
-            }
-            if (item.Contains("RETURNS"))
-            {
-                startRecordingResults = true;
-            }
+            string id_surface = jsonResponse[i].AsObject["id_surface"];
+            string libelle = jsonResponse[i].AsObject["libelle"];
+            idsAndLibelle.Add(new List<string> { id_surface, libelle });
         }
 
         // Now actually restore it

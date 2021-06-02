@@ -131,20 +131,27 @@ public class MenusHandler : MonoBehaviour
     {
         busyIds.Add(id);
         Material mat = hit.collider.gameObject.GetComponent<Renderer>().material;
-        Color initColor = mat.GetColor("_Tint");    // This will fail if the shader changes
-        yield return null;
-
-        float interp = 0.0f;
-
-        while (interp < 1.0f)
+        if (mat.HasProperty("_Tint"))
         {
-            mat.SetColor("_Tint", Color.Lerp(Color.red, initColor, interp));
-            interp += 0.025f;
-            yield return new WaitForSeconds(0.03f);
-        }
+            Color initColor = mat.GetColor("_Tint");    // This will fail if the shader changes
+            yield return null;
 
-        mat.SetColor("_Tint", Color.Lerp(Color.red, initColor, interp));
-        busyIds.Remove(id);
-        yield return null;
+            float interp = 0.0f;
+
+            while (interp < 1.0f)
+            {
+                mat.SetColor("_Tint", Color.Lerp(Color.red, initColor, interp));
+                interp += 0.025f;
+                yield return new WaitForSeconds(0.03f);
+            }
+
+            mat.SetColor("_Tint", Color.Lerp(Color.red, initColor, interp));
+            busyIds.Remove(id);
+            yield return null;
+        }
+        else
+        {
+            yield return null;
+        }
     }
 }

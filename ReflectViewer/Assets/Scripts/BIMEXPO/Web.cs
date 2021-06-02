@@ -8,6 +8,7 @@ using UnityEngine.Networking;
 using UnityEngine.Reflect; //Unity.Reflect has to be added to the asmdef in the current folder
 using System.Collections.ObjectModel;
 using Unity.Reflect.Viewer.UI;
+using SimpleJSON;
 
 public class Web : MonoBehaviour
 {
@@ -63,7 +64,8 @@ public class Web : MonoBehaviour
             if (!tablesCreated)
             {
                 StartCoroutine(createBuildingTable());
-                StartCoroutine(SetDefaultMaterials());
+                //StartCoroutine(SetDefaultMaterials());
+                StartCoroutine(SetDefaultMaterialsJSON()); 
                 var fao = GameObject.Find("Root").GetComponent<FindAllObjects>();
                 fao.FindAll("Wall");
                 tablesCreated = true;
@@ -833,8 +835,15 @@ public class Web : MonoBehaviour
         return comment;
     }
 
-    private IEnumerator GetJSONResultFromDB(string scriptName, Action<string> callback)
+    /// <summary>
+    /// Flexible function that gets the result of a PHP script as a JSON array, and that uses a callback function to then pass that result.
+    /// </summary>
+    /// <param name="scriptName">The PHP script to be called via WebRequest.</param>
+    /// <param name="callback">The callback function that will be used to retrieve the JSON array via its argument.</param>
+    /// <returns></returns>
+    private IEnumerator GetJSONResultFromDBCoroutine(string scriptName, Action<JSONArray> callback)
     {
+        string[] phpReturnedList = { };
         using (UnityWebRequest www = UnityWebRequest.Get(scriptName))
         {
             yield return www.SendWebRequest();
@@ -844,15 +853,95 @@ public class Web : MonoBehaviour
             }
             else
             {
-                string jsonArray = www.downloadHandler.text;
-                Debug.Log(jsonArray);
-                callback(jsonArray);    // Once the results are obtained, pass them on to callback.
+                // Get the response from DB and split messages from json response
+                string receivedTilesString = www.downloadHandler.text;
+                string jsonArrayString = "";
+                phpReturnedList = receivedTilesString.Split(';');
+                bool startRecordingResults = false;
+                foreach (string item in phpReturnedList)
+                {
+                    if (startRecordingResults)
+                    {
+                        jsonArrayString = item;
+                        break;
+                    }
+                    if (item.Contains("RETURNS"))
+                    {
+                        startRecordingResults = true;
+                    }
+                }
+
+                // Parse the JSON result into a JSONArray
+                JSONArray jsonArray = JSON.Parse(jsonArrayString) as JSONArray;
+
+                // Once the results are obtained, pass them on to callback.
+                callback(jsonArray);    
             }
         }
     }
 
     /// <summary>
     /// Automatically sets default materials on the building, based on materials identified as such in the DB.
+    /// </summary>
+    private IEnumerator SetDefaultMaterialsJSON()
+    {
+        List<List<string>> defaultsList = new List<List<string>> { };
+        string phpScript = "http://bimexpo/ReadDefaults.php";
+        JSONArray jsonMaterials = new JSONArray();
+
+        bool wait = true;
+        StartCoroutine(GetJSONResultFromDBCoroutine(phpScript, (jsonResult) =>
+        {
+            jsonMaterials = jsonResult; // Recuperate jsonResult (which is the argument of the callback method, passed in inside GetJSONResultFromDB. So it is jsonArray.)
+            wait = false;               // This line is reached only upon callback completion inside GetJSONResultFromDB.
+        }));
+
+        while (wait)    // Wait for the call to DB in GetJSONResultFromDB is done, so we're sure we have now retrieved jsonResult inside jsonMaterials.
+        {
+            yield return null;
+        }
+
+        // Read the JSON result
+        for (int i = 0; i < jsonMaterials.Count; i++)
+        {
+            string surfaceType = jsonMaterials[i].AsObject["surface_type"];
+            string inOut = jsonMaterials[i].AsObject["in_out"];
+            string matName = jsonMaterials[i].AsObject["material_name"];
+            List<string> subList = new List<string>();
+            defaultsList.Add(new List<string> { surfaceType, inOut, matName });
+        }
+
+        foreach (List<string> subList in defaultsList)
+        {
+            // Load the material
+            GameObject root = GameObject.Find("Root");
+            Component[] children = root.GetComponentsInChildren(typeof(Transform));
+            Material matToApply = Resources.Load<Material>("defaults/materials/" + subList[2]);
+            matToApply.shader = Shader.Find("UnityReflect/URPOpaque");
+
+            // Detect brick walls and apply material
+            foreach (Transform tr in children)
+            {
+                var meta = tr.gameObject.GetComponent<Metadata>();
+                if (meta != null)
+                {
+                    if (meta.GetParameter("Type").Contains("Brique") && subList[1] == "out")
+                    {
+                        tr.gameObject.GetComponent<MeshRenderer>().material = matToApply;
+                    }
+                    else if (meta.GetParameter("Type").Contains("Carrelage_Mural") && subList[1] == "in")
+                    {
+                        tr.gameObject.GetComponent<MeshRenderer>().material = matToApply;
+                    }
+                }
+            }
+        }
+
+        yield return null;
+    }
+
+    /// <summary>
+    /// [OBSOLETE] Automatically sets default materials on the building, based on materials identified as such in the DB.
     /// </summary>
     private IEnumerator SetDefaultMaterials()
     {

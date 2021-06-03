@@ -1,5 +1,6 @@
 <?php
 
+$session = $_POST["session"];
 $surfaceId = $_POST["surfaceId"];
 $tileName = $_POST["tileName"];
 $clientId = $_POST["clientId"];
@@ -18,13 +19,9 @@ catch(Exception $e)
 	die('Error : ' . $e->getMessage());
 }
 
-echo "DEBUG: area: " . $area . "\n";
-echo "DEBUG: price: " . $tilePrice . "\n";
-echo "DEBUG: totalPrice: " . $totalPrice . "\n";
-
-$choiceInsertion = "REPLACE INTO c" . $clientId . "_p" . $projectId . "_choices (id_surface, id_tile) ";
-
-$choiceInsertion = $choiceInsertion . "SELECT c" . $clientId . "_p" . $projectId . "_surfaces.id_surface, tptiles.id FROM c" . $clientId . "_p" . $projectId . "_surfaces, tptiles ";
+$choiceInsertion = "INSERT INTO c" . $clientId . "_p" . $projectId . "_choices (id_surface, id_tile, session) ";
+$choiceInsertion = $choiceInsertion . "SELECT c" . $clientId . "_p" . $projectId . "_surfaces.id_surface, tptiles.id, '" . $session . "' ";
+$choiceInsertion = $choiceInsertion . "FROM c" . $clientId . "_p" . $projectId . "_surfaces, tptiles ";
 $choiceInsertion = $choiceInsertion . "WHERE libelle='" . $tileName . "' AND c" . $clientId . "_p" . $projectId . "_surfaces.id_surface='" . $surfaceId . "';";
 
 $result = $bdd->query($choiceInsertion);
@@ -42,8 +39,6 @@ else
 $result->closeCursor();
 
 // Now the price
-
-
 $priceCmd = "UPDATE c" . $clientId . "_p" . $projectId . "_choices SET surface_price='" . $totalPrice . "' WHERE id_surface='" . $surfaceId . "';";
 $result = $bdd->query($priceCmd);
 if ($result->errorCode() == 00000) 
@@ -56,6 +51,5 @@ else
 }
 //Close the query access
 $result->closeCursor();
-
 
 ?>

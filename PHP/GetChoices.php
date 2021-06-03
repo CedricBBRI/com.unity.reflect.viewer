@@ -12,7 +12,7 @@ catch(Exception $e)
 	die('Error : ' . $e->getMessage());
 }
 
-$selectTiles = "SELECT id_surface, libelle FROM c" . $clientId . "_p" . $projectId . "_choices INNER JOIN tptiles ON c" . $clientId . "_p" . $projectId . "_choices.id_tile=tptiles.id;";
+$selectTiles = "SELECT id_surface, libelle, session FROM c" . $clientId . "_p" . $projectId . "_choices INNER JOIN tptiles ON c" . $clientId . "_p" . $projectId . "_choices.id_tile=tptiles.id ORDER BY session DESC;";
 $result = $bdd->query($selectTiles);
 
 if ($result->errorCode() == 00000) 
@@ -30,7 +30,7 @@ if ($result->rowCount() > 0) {
 
 // output data of each row
 while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-    echo ";" . $row['id_surface'] . "," . $row['libelle'];
+    echo ";" . $row['id_surface'] . "," . $row['libelle'] . "," . $row['session'];
 } 
 
 //Close the query access

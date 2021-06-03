@@ -2,6 +2,7 @@
 
 $clientId = $_POST["clientId"];
 $projectId = $_POST["projectId"];
+$session = $_POST["session"];
 
 try
 {
@@ -33,7 +34,7 @@ else
 $result->closeCursor();
 
 // Create the table
-$tableCreation = "CREATE TABLE IF NOT EXISTS " . $avenantTable . " ( surface_id INT UNSIGNED NOT NULL, level VARCHAR(20), area VARCHAR(20), libelle VARCHAR(100), unit_price VARCHAR(20), total_price DOUBLE UNSIGNED, comment VARCHAR(200), PRIMARY KEY (surface_id) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
+$tableCreation = "CREATE TABLE IF NOT EXISTS " . $avenantTable . " ( surface_id INT UNSIGNED NOT NULL, level VARCHAR(20), area VARCHAR(20), libelle VARCHAR(100), unit_price VARCHAR(20), total_price DOUBLE UNSIGNED, comment VARCHAR(200), session DATETIME, PRIMARY KEY (surface_id, session) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
 $result = $bdd->query($tableCreation);
 
 if ($result->errorCode() == 00000) 
@@ -47,19 +48,13 @@ else
 $result->closeCursor();
 
 //Make the join
-$tableJoin = "INSERT INTO " . $avenantTable . " SELECT " . $surfacesTable . ".id_surface, " . $surfacesTable . ".level, " . $surfacesTable . ".area, " . $tilesTable . ".libelle, "  . $tilesTable . ".prix_vente, " . $choicesTable . ".surface_price, " . $commentsTable . ".comment";
+$tableJoin = "INSERT INTO " . $avenantTable . " SELECT " . $surfacesTable . ".id_surface, " . $surfacesTable . ".level, " . $surfacesTable . ".area, " . $tilesTable . ".libelle, "  . $tilesTable . ".prix_vente, " . $choicesTable . ".surface_price, " . $commentsTable . ".comment, " . $choicesTable . ".session";
 $tableJoin = $tableJoin . " FROM " . $choicesTable;
 $tableJoin = $tableJoin . " INNER JOIN " . $tilesTable . " ON " . $choicesTable . ".id_tile = " . $tilesTable . ".id";
 $tableJoin = $tableJoin . " INNER JOIN " . $surfacesTable . " ON " . $choicesTable . ".id_surface = " . $surfacesTable . ".id_surface";
 $tableJoin = $tableJoin . " LEFT JOIN " . $commentsTable . " ON " . $commentsTable . ".id_surface = " . $surfacesTable . ".id_surface;";
 
-//SELECT c123456_p000001_surfaces.id_surface, c123456_p000001_surfaces.level, c123456_p000001_surfaces.area, tptiles.libelle, c123456_p000001_comments.comment 
-//FROM c123456_p000001_choices 
-//INNER JOIN tptiles ON c123456_p000001_choices.id_tile = tptiles.id
-//INNER JOIN c123456_p000001_surfaces ON c123456_p000001_choices.id_surface = c123456_p000001_surfaces.id_surface 
-//LEFT JOIN c123456_p000001_comments ON c123456_p000001_comments.id_surface = c123456_p000001_surfaces.id_surface;
-
-echo $tableJoin;
+//echo $tableJoin;
 
 $result = $bdd->query($tableJoin);
 

@@ -1,0 +1,5 @@
+.imageContainer > img:hover {
+  width: auto;
+  height: auto;
+  vertical-align: center;
+}

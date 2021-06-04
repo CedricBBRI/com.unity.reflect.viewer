@@ -48,11 +48,12 @@ else
 $result->closeCursor();
 
 //Make the join
-$tableJoin = "INSERT INTO " . $avenantTable . " SELECT " . $surfacesTable . ".id_surface, " . $surfacesTable . ".level, " . $surfacesTable . ".area, " . $tilesTable . ".libelle, "  . $tilesTable . ".prix_vente, " . $choicesTable . ".surface_price, " . $commentsTable . ".comment, " . $choicesTable . ".session";
+$tableJoin = "REPLACE INTO " . $avenantTable . " SELECT " . $surfacesTable . ".id_surface, " . $surfacesTable . ".level, " . $surfacesTable . ".area, " . $tilesTable . ".libelle, "  . $tilesTable . ".prix_vente, " . $choicesTable . ".surface_price, " . $commentsTable . ".comment, " . $choicesTable . ".session";
 $tableJoin = $tableJoin . " FROM " . $choicesTable;
 $tableJoin = $tableJoin . " INNER JOIN " . $tilesTable . " ON " . $choicesTable . ".id_tile = " . $tilesTable . ".id";
 $tableJoin = $tableJoin . " INNER JOIN " . $surfacesTable . " ON " . $choicesTable . ".id_surface = " . $surfacesTable . ".id_surface";
-$tableJoin = $tableJoin . " LEFT JOIN " . $commentsTable . " ON " . $commentsTable . ".id_surface = " . $surfacesTable . ".id_surface;";
+$tableJoin = $tableJoin . " LEFT JOIN " . $commentsTable . " ON " . $commentsTable . ".id_surface = " . $surfacesTable . ".id_surface";
+$tableJoin = $tableJoin . " AND " . $commentsTable . ".session = " . $choicesTable . ".session;";
 
 //echo $tableJoin;
 

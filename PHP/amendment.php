@@ -75,19 +75,51 @@ $result = $bdd->query($query);
 	<h1>Captures d'écran</h1>
 	<?php
 	$result->closeCursor();
-	$newquery = "SELECT * FROM `c" . $clientId ."_p" . $projectId . "_screenshots` INNER JOIN c" . $clientId . "_p" . $projectId . "_comments ON c" . $clientId ."_p" . $projectId . "_screenshots.id_surface=c" . $clientId . "_p" . $projectId . "_comments.id_surface;";
+	$newquery = "SELECT * FROM `c" . $clientId ."_p" . $projectId . "_screenshots` INNER JOIN `c" . $clientId . "_p" . $projectId . "_comments` ON (c" . $clientId ."_p" . $projectId . "_screenshots.id_surface=c" . $clientId . "_p" . $projectId . "_comments.id_surface) AND  (c" . $clientId ."_p" . $projectId . "_screenshots.session=c" . $clientId . "_p" . $projectId . "_comments.session) ORDER BY c" . $clientId . "_p" . $projectId . "_comments.session DESC;";
 	$result = $bdd->query($newquery);
 	?>
 	<table>
-		<?php while ($row = $result->fetch(PDO::FETCH_ASSOC)):;?>
-		<tr>
+		<?php 
+		$counter = 0;
+		$totalCount = 0;
+		$commentsArray = array();
+		$sessionArray = array();
+		while ($row = $result->fetch(PDO::FETCH_ASSOC)):
+			$totalCount += 1;
+			if ($counter == 0) {
+				$commentsArray = array();
+				$sessionArray = array();
+				echo "<tr>";
+			}
+			array_push($commentsArray, $row['comment']);
+			//$sess = date_create_from_format('Y-m-d H:i:s', $row['session']);
+			//$sess->getTimestamp();
+			//$sess->date_format('Y-m-d H:i:s');
+			array_push($sessionArray, $row['session']);
+			;?>
 			<td>
 				<div class="imageContainer">
-					<img src=<?php echo "http://bimexpo/screenshots/" . $row['filename'] . " alt=\"" . $row['filename'] . "\"";?>  height="150" width="300">
+					<img src=<?php echo "http://bimexpo/screenshots/" . $row['filename'] . " alt=\"" . $row['filename'] . "\"";?>  height="200" width="300">
 				</div>
 			</td>
-			<td><?php echo $row['comment'];?></td>
-		</tr>
+			<?php
+			if ($counter > 3 || $totalCount == $result->rowCount()) {
+				echo "</tr>";
+				echo "<tr>";
+				foreach ($commentsArray as $value) {
+					echo "<td>" . $value . "</td>";
+				}
+				echo "</tr>";
+				echo "<tr>";
+				foreach ($sessionArray as $value) {
+					echo "<td>" . $value . "</td>";
+				}
+				echo "</tr>";
+
+				$counter = 0;
+			}
+			else
+				{$counter += 1;};?>
 		<?php endwhile;?>
 		<?php $result->closeCursor();?>
 	</table>

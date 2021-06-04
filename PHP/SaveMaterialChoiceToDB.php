@@ -19,7 +19,7 @@ catch(Exception $e)
 	die('Error : ' . $e->getMessage());
 }
 
-$choiceInsertion = "INSERT INTO c" . $clientId . "_p" . $projectId . "_choices (id_surface, id_tile, session) ";
+$choiceInsertion = "REPLACE INTO c" . $clientId . "_p" . $projectId . "_choices (id_surface, id_tile, session) ";
 $choiceInsertion = $choiceInsertion . "SELECT c" . $clientId . "_p" . $projectId . "_surfaces.id_surface, tptiles.id, '" . $session . "' ";
 $choiceInsertion = $choiceInsertion . "FROM c" . $clientId . "_p" . $projectId . "_surfaces, tptiles ";
 $choiceInsertion = $choiceInsertion . "WHERE libelle='" . $tileName . "' AND c" . $clientId . "_p" . $projectId . "_surfaces.id_surface='" . $surfaceId . "';";

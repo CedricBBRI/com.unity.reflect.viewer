@@ -52,10 +52,12 @@ public class CommentMenuScript : MonoBehaviour
 
         // Define the name of the file
         string filename;
+        var webScript = GameObject.Find("Root").GetComponent<Web>();
         var meta = surface.GetComponent<Metadata>();
+        string sessionDateTime = webScript.sessionSqlFormattedDate.Replace(" ", "").Replace(":", "");
         if (meta != null)
         {
-            filename = meta.GetParameter("Id") + ".png";
+            filename = meta.GetParameter("Id") + sessionDateTime + ".png";
         }
         else
         {
@@ -83,7 +85,6 @@ public class CommentMenuScript : MonoBehaviour
         GameObject.Find("TileChoiceMenu").GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("menu").style.display = DisplayStyle.Flex;
 
         // Save it to DB
-        var webScript = GameObject.Find("Root").GetComponent<Web>();
         webScript.saveScreenshot(filename, camPos, camRot, target);
     }
 }

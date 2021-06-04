@@ -80,34 +80,6 @@ public class Web : MonoBehaviour
 
     private void Update()
     {
-        //UIStateManager myUIState = new UIStateManager();
-        //UIStateData usd = myUIState.stateData;
-        //int cp = usd.progressData.currentProgress;
-
-        //Debug.Log("DEBUG UI STATE: " + cp);
-
-        //m_UIStateData
-        // Try to access m_UImanager
-        /*
-        if (GameObject.Find("Root").transform.Find("Cube") == null)
-        {
-            if (GameObject.Find("Root").transform.childCount > 0 && !buildingTableCreated)
-            {
-                StartCoroutine(createBuildingTable());
-                StartCoroutine(SetDefaultMaterials());
-                buildingTableCreated = true;
-            }
-        }
-        else
-        {
-            if (GameObject.Find("Root").transform.childCount > 1 && !buildingTableCreated)
-            {
-                StartCoroutine(createBuildingTable());
-                StartCoroutine(SetDefaultMaterials());
-                buildingTableCreated = true;
-            }
-        }
-        */
     }
 
     IEnumerator CreateUserChoicesTable()
@@ -717,6 +689,7 @@ public class Web : MonoBehaviour
         form.AddField("projectId", projectId);
         form.AddField("clientId", clientId);
         form.AddField("comment", comment);
+        form.AddField("session", sessionSqlFormattedDate);
         form.AddField("surfaceID", surfaceID);
 
         using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))

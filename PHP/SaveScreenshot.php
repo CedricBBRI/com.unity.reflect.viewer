@@ -36,7 +36,7 @@ else
 $result->closeCursor();
 
 //Insert comment
-$insertCmd = "INSERT INTO c" . $clientId . "_p" . $projectId . "_screenshots (id_surface, filename, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, session) VALUES ( '" . $surfaceID . "', '" . $filename . "', '" . $positionX . "', '" . $positionY . "', '" . $positionZ . "', '" . $rotationX . "', '" . $rotationY . "', '" . $rotationZ . "', '" . $session . "');";
+$insertCmd = "REPLACE INTO c" . $clientId . "_p" . $projectId . "_screenshots (id_surface, filename, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, session) VALUES ( '" . $surfaceID . "', '" . $filename . "', '" . $positionX . "', '" . $positionY . "', '" . $positionZ . "', '" . $rotationX . "', '" . $rotationY . "', '" . $rotationZ . "', '" . $session . "');";
 
 $result = $bdd->query($insertCmd);
 

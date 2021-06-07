@@ -5,6 +5,8 @@ using UnityEngine.Events;
 using UnityEngine.UIElements;
 using Unity.Reflect.Viewer.UI;
 using UnityEngine.Reflect;
+using System.Reflection;
+using System.IO;
 
 public class MenusHandler : MonoBehaviour
 {
@@ -153,5 +155,76 @@ public class MenusHandler : MonoBehaviour
         {
             yield return null;
         }
+    }
+
+    public void saveScreenshotWrapper(GameObject surface)
+    {
+        StartCoroutine(saveScreenshot(surface));
+    }
+
+    IEnumerator saveScreenshot(GameObject surface)
+    {
+        // Get camera coordinates and orientation
+        Transform cam = GameObject.FindGameObjectWithTag("MainCamera").transform;
+        Vector3 camPos = cam.position;
+        Quaternion camRot = cam.rotation;
+
+        // Define the name of the file
+        string filename;
+        var webScript = GameObject.Find("Root").GetComponent<Web>();
+        var meta = surface.GetComponent<Metadata>();
+        string sessionDateTime = webScript.sessionSqlFormattedDate.Replace(" ", "").Replace(":", "");
+        if (meta != null)
+        {
+            filename = meta.GetParameter("Id") + sessionDateTime + ".png";
+        }
+        else
+        {
+            throw new System.Exception("No Id attached to surface!");
+        }
+
+        // Make the screenshot
+        string currentDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        string gitRootDir = Directory.GetParent(currentDir).Parent.Parent.FullName;
+        string screenshotsDir = gitRootDir + "\\PHP\\screenshots\\";
+
+        // Wait till the last possible moment before screen rendering to hide the UI, if necessary
+        yield return null;
+        bool commentMenuInitialVisibility = true;
+        bool tileMenuInitialVisibility = true;
+        if (GameObject.Find("CommentMenu") != null)
+        {
+            GameObject.Find("CommentMenu").GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("root-ve").style.display = DisplayStyle.None;
+        }
+        else
+        {
+            commentMenuInitialVisibility = false;
+        }
+        if (GameObject.Find("TileChoiceMenu") != null)
+        {
+            GameObject.Find("TileChoiceMenu").GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("menu").style.display = DisplayStyle.None;
+        }
+        else
+        {
+            tileMenuInitialVisibility = false;
+        }
+        // Wait for screen rendering to complete
+        yield return new WaitForEndOfFrame();
+
+        // Take screenshot
+        ScreenCapture.CaptureScreenshot(screenshotsDir + filename);
+
+        // Show UI after we're done, if necessary
+        if (commentMenuInitialVisibility)
+        {
+            GameObject.Find("CommentMenu").GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("root-ve").style.display = DisplayStyle.Flex;
+        }
+        if (tileMenuInitialVisibility)
+        {
+            GameObject.Find("TileChoiceMenu").GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("menu").style.display = DisplayStyle.Flex;
+        }
+
+        // Save it to DB
+        webScript.saveScreenshotToDB(filename, camPos, camRot, surface);
     }
 }

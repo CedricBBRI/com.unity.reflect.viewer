@@ -710,7 +710,7 @@ public class Web : MonoBehaviour
         }
     }
 
-    public void saveScreenshot(string filename, Vector3 position, Quaternion rotation, GameObject targetSurface)
+    public void saveScreenshotToDB(string filename, Vector3 position, Quaternion rotation, GameObject targetSurface)
     {
         // Getting surface ID
         var meta = targetSurface.GetComponent<Metadata>();

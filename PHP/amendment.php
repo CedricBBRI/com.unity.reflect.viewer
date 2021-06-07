@@ -128,11 +128,11 @@ $result = $bdd->query($query);
 				<a href="#new-captures"><h2>Dernières modifications</h2></a>
 				<?php
 				$result->closeCursor();
-				$newquery = "SELECT * FROM `c" . $clientId ."_p" . $projectId . "_screenshots` INNER JOIN `c" . $clientId . "_p" . $projectId . "_comments` ON (c" . $clientId ."_p" . $projectId . "_screenshots.id_surface=c" . $clientId . "_p" . $projectId . "_comments.id_surface) AND  (c" . $clientId ."_p" . $projectId . "_screenshots.session=c" . $clientId . "_p" . $projectId . "_comments.session) WHERE c" . $clientId ."_p" . $projectId . "_screenshots.session='" . $lastSession->format('Y-m-d H:i:s') . "' ORDER BY c" . $clientId . "_p" . $projectId . "_comments.session DESC;";
+				$newquery = "SELECT filename, comment, c" . $clientId ."_p" . $projectId . "_screenshots.session FROM `c" . $clientId ."_p" . $projectId . "_screenshots` LEFT JOIN `c" . $clientId . "_p" . $projectId . "_comments` ON (c" . $clientId ."_p" . $projectId . "_screenshots.id_surface=c" . $clientId . "_p" . $projectId . "_comments.id_surface) AND  (c" . $clientId ."_p" . $projectId . "_screenshots.session=c" . $clientId . "_p" . $projectId . "_comments.session) WHERE c" . $clientId ."_p" . $projectId . "_screenshots.session='" . $lastSession->format('Y-m-d H:i:s') . "' ORDER BY c" . $clientId . "_p" . $projectId . "_comments.session DESC;";
 				$result = $bdd->query($newquery);
 				?>
 				<table>
-					<?php 
+					<?php
 					$counter = 0;
 					$totalCount = 0;
 					$commentsArray = array();
@@ -184,7 +184,7 @@ $result = $bdd->query($query);
 			<section id="old-captures">
 				<?php
 				$result->closeCursor();
-				$newquery = "SELECT * FROM `c" . $clientId ."_p" . $projectId . "_screenshots` INNER JOIN `c" . $clientId . "_p" . $projectId . "_comments` ON (c" . $clientId ."_p" . $projectId . "_screenshots.id_surface=c" . $clientId . "_p" . $projectId . "_comments.id_surface) AND  (c" . $clientId ."_p" . $projectId . "_screenshots.session=c" . $clientId . "_p" . $projectId . "_comments.session) WHERE c" . $clientId ."_p" . $projectId . "_screenshots.session!='" . $lastSession->format('Y-m-d H:i:s') . "' ORDER BY c" . $clientId . "_p" . $projectId . "_comments.session DESC;";
+				$newquery = "SELECT filename, comment, c" . $clientId ."_p" . $projectId . "_screenshots.session FROM `c" . $clientId ."_p" . $projectId . "_screenshots` INNER JOIN `c" . $clientId . "_p" . $projectId . "_comments` ON (c" . $clientId ."_p" . $projectId . "_screenshots.id_surface=c" . $clientId . "_p" . $projectId . "_comments.id_surface) AND  (c" . $clientId ."_p" . $projectId . "_screenshots.session=c" . $clientId . "_p" . $projectId . "_comments.session) WHERE c" . $clientId ."_p" . $projectId . "_screenshots.session!='" . $lastSession->format('Y-m-d H:i:s') . "' ORDER BY c" . $clientId . "_p" . $projectId . "_comments.session DESC;";
 				$result = $bdd->query($newquery);
 				?>
 				<table>

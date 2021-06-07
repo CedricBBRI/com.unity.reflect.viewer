@@ -4,7 +4,6 @@
         <ui:TextField picking-mode="Ignore" label="CommentField" value="comment" text="..." multiline="true" name="txtField" style="flex-grow: 1; justify-content: flex-start; align-items: stretch; flex-direction: row; flex-wrap: nowrap;" />
         <ui:VisualElement style="flex-direction: row; flex-grow: 0; justify-content: flex-start; width: 100%;">
             <ui:Button text="OK&#10;" display-tooltip-when-elided="true" name="ok-button" style="flex-grow: 0; left: 45%;" />
-            <ui:Button text="Capturer vue" display-tooltip-when-elided="true" name="screenshot" style="left: 1%;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

@@ -236,8 +236,15 @@ namespace UnityEngine.Reflect
         /// <param name="obj">The GameObject to be highlighted</param>
         private void HighlightObject(GameObject obj)
         {
-            var outline = obj.AddComponent<OutlineUI>();
-
+            OutlineUI outline;
+            if (obj.GetComponent<OutlineUI>() == null)
+            {
+                outline = obj.AddComponent<OutlineUI>();
+            }
+            else
+            {
+                outline = obj.GetComponent<OutlineUI>();
+            }
             outline.OutlineMode = OutlineUI.Mode.OutlineAll;
             outline.OutlineColor = Color.yellow;
             outline.OutlineWidth = 5f;

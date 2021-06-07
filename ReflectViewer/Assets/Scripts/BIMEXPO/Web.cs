@@ -11,6 +11,9 @@ using Unity.Reflect.Viewer.UI;
 
 public class Web : MonoBehaviour
 {
+    DateTime sessionDateTime;
+    public string sessionSqlFormattedDate { get; private set; }
+    
     private bool tablesCreated = false;
     private bool localPreselectionDone = false;
     public bool preselectionDone { get { return localPreselectionDone; } }
@@ -37,6 +40,10 @@ public class Web : MonoBehaviour
 
     void Start()
     {
+        // Session info
+        sessionDateTime = DateTime.Now;
+        sessionSqlFormattedDate = sessionDateTime.ToString("yyyy-MM-dd HH:mm:ss");
+
         // !! YOU NEED TO HAVE SET UP A VRITUALHOST NAMED 'bimexpo', pointing to the 'PHP' folder
         string currentDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         string csvDir = Directory.GetParent(currentDir).Parent.Parent.FullName;
@@ -73,34 +80,6 @@ public class Web : MonoBehaviour
 
     private void Update()
     {
-        //UIStateManager myUIState = new UIStateManager();
-        //UIStateData usd = myUIState.stateData;
-        //int cp = usd.progressData.currentProgress;
-
-        //Debug.Log("DEBUG UI STATE: " + cp);
-
-        //m_UIStateData
-        // Try to access m_UImanager
-        /*
-        if (GameObject.Find("Root").transform.Find("Cube") == null)
-        {
-            if (GameObject.Find("Root").transform.childCount > 0 && !buildingTableCreated)
-            {
-                StartCoroutine(createBuildingTable());
-                StartCoroutine(SetDefaultMaterials());
-                buildingTableCreated = true;
-            }
-        }
-        else
-        {
-            if (GameObject.Find("Root").transform.childCount > 1 && !buildingTableCreated)
-            {
-                StartCoroutine(createBuildingTable());
-                StartCoroutine(SetDefaultMaterials());
-                buildingTableCreated = true;
-            }
-        }
-        */
     }
 
     IEnumerator CreateUserChoicesTable()
@@ -449,7 +428,6 @@ public class Web : MonoBehaviour
 
         if (File.Exists(picture))
         {
-            Debug.Log("File exists!");
             FileData = File.ReadAllBytes(picture);
             Tex2D = new Texture2D(2, 2);                // Create new "empty" texture
             if (Tex2D.LoadImage(FileData))              // Load the imagedata into the texture (size is set automatically)
@@ -503,6 +481,7 @@ public class Web : MonoBehaviour
         WWWForm form = new WWWForm();
         form.AddField("clientId", clientId);
         form.AddField("projectId", projectId);
+        form.AddField("session", sessionSqlFormattedDate);
 
         string phpScript = "http://bimexpo/CreateAmendment.php";
         
@@ -517,7 +496,7 @@ public class Web : MonoBehaviour
             else
             {
                 Debug.Log(www.downloadHandler.text);
-                Application.OpenURL("http://bimexpo/amendment.php?clientId=" + clientId + "&projectId=" + projectId);
+                Application.OpenURL("http://bimexpo/amendment.php?clientId=" + clientId + "&projectId=" + projectId + "&session=" + sessionSqlFormattedDate);
             }
         }
     }
@@ -710,6 +689,7 @@ public class Web : MonoBehaviour
         form.AddField("projectId", projectId);
         form.AddField("clientId", clientId);
         form.AddField("comment", comment);
+        form.AddField("session", sessionSqlFormattedDate);
         form.AddField("surfaceID", surfaceID);
 
         using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
@@ -749,6 +729,7 @@ public class Web : MonoBehaviour
         form.AddField("projectId", projectId);
         form.AddField("clientId", clientId);
         form.AddField("filename", filename);
+        form.AddField("session", sessionSqlFormattedDate);
         form.AddField("surfaceID", surfaceID);
         form.AddField("positionX", position.x.ToString());
         form.AddField("positionY", position.y.ToString());
@@ -966,18 +947,23 @@ public class Web : MonoBehaviour
             }
         }
         bool startRecordingResults = false;
-        List<List<string>> idsAndLibelle = new List<List<string>>();
+        List<List<string>> idsAndLibelleAndSession = new List<List<string>>();
+        DateTime mostRecentSession = DateTime.MinValue;
         foreach (string item in phpReturnedList)
         {
             if (startRecordingResults)
             {
-                string[] id_libelle = item.Split(',');
+                string[] id_libelle_session = item.Split(',');
                 List<string> subList = new List<string>();
-                foreach (string item2 in id_libelle)
+                foreach (string item2 in id_libelle_session)
                 {
                     subList.Add(item2);
                 }
-                idsAndLibelle.Add(subList);
+                if (mostRecentSession == DateTime.MinValue)
+                {
+                    mostRecentSession = DateTime.Parse(id_libelle_session[2]);
+                }
+                idsAndLibelleAndSession.Add(subList);
             }
             if (item.Contains("RETURNS"))
             {
@@ -996,18 +982,21 @@ public class Web : MonoBehaviour
             }
         }
 
-        foreach (List<string> item in idsAndLibelle)
+        foreach (List<string> item in idsAndLibelleAndSession)
         {
-            Component[] children = root.GetComponentsInChildren(typeof(Transform));
-            foreach (Transform tr in children)
+            if (DateTime.Parse(item[2]) == mostRecentSession)
             {
-                var meta = tr.gameObject.GetComponent<Metadata>();
-                if (meta != null)
+                Component[] children = root.GetComponentsInChildren(typeof(Transform));
+                foreach (Transform tr in children)
                 {
-                    if (meta.GetParameter("Id") == item[0])
+                    var meta = tr.gameObject.GetComponent<Metadata>();
+                    if (meta != null)
                     {
-                        tcms.ApplyMaterialToSurface(item[1], tr.gameObject);
-                        continue;
+                        if (meta.GetParameter("Id") == item[0])
+                        {
+                            tcms.ApplyMaterialToSurface(item[1], tr.gameObject);
+                            continue;
+                        }
                     }
                 }
             }

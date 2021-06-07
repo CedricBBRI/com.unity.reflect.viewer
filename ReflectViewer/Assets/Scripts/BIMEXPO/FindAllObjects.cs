@@ -37,7 +37,7 @@ namespace UnityEngine.Reflect
                 foreach (Transform tr in transformList)
                 {
                     GameObject go = tr.gameObject;
-                    Debug.Log(go.name + "\n");
+                    //Debug.Log(go.name + "\n");
                     var meta = go.GetComponent<Metadata>();
                     if (go.transform.IsChildOf(root.transform) && meta != null && meta.GetParameters().Count() >= 1)
                     {

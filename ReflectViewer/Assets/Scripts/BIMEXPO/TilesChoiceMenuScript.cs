@@ -11,6 +11,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
     public string chosenMaterial, chosenTexturePath;
     public GameObject target;
     private Button okButton, okScButton;
+    private bool selectionDone = false;
 
 
     void OnEnable()
@@ -22,7 +23,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
         okButton.AddToClassList("ok-but");
         okButton.clicked += SaveChosenMaterialToDB;
         okButton.clicked += ApplyChosenMaterialToSurface;
-        okButton.clicked += CloseMenu;
+        okButton.RegisterCallback<ClickEvent>(ev => CloseMenu(selectionDone));
 
         okScButton = rootVisualElement.Q<Button>("ok-screenshot-button");
         okScButton.styleSheets.Add(Resources.Load<StyleSheet>("USS/testVE"));
@@ -33,8 +34,8 @@ public class TilesChoiceMenuScript : MonoBehaviour
 
         var mh = GameObject.Find("Root").GetComponent<MenusHandler>();
 
-        okScButton.RegisterCallback<ClickEvent>(ev => mh.saveScreenshotWrapper(target));
-        okScButton.clicked += CloseMenu;
+        okScButton.RegisterCallback<ClickEvent>(ev => mh.saveScreenshotWrapper(target, selectionDone));
+        okScButton.RegisterCallback<ClickEvent>(ev => CloseMenu(selectionDone));
 
         VisualElement imgContainer = rootVisualElement.Q<VisualElement>("img-container");
         imgContainer.styleSheets.Add(Resources.Load<StyleSheet>("USS/testVE"));
@@ -53,6 +54,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
     /// <param name="name">The 'libellé' of the tile</param>
     public void SelectMaterial(string name)
     {
+        selectionDone = true;
         var webScript = GameObject.Find("Root").GetComponent<Web>();
         chosenMaterial = name;
         chosenTexturePath = webScript.GetTexturePathFromNameM(name);
@@ -81,6 +83,13 @@ public class TilesChoiceMenuScript : MonoBehaviour
 
     void ApplyChosenMaterialToSurface()
     {
+        // First check if a selection was done
+        var mh = GameObject.Find("Root").GetComponent<MenusHandler>();
+        if (!selectionDone)
+        {
+            mh.ShowErrorInfoWrapper("Please first make a material selection.");
+            return;
+        }
         var webScript = GameObject.Find("Root").GetComponent<Web>();
 
         // Get the tile dimensions
@@ -172,6 +181,14 @@ public class TilesChoiceMenuScript : MonoBehaviour
     /// </summary>
     void SaveChosenMaterialToDB()
     {
+        // First check if a selection was done
+        var mh = GameObject.Find("Root").GetComponent<MenusHandler>();
+        if (!selectionDone)
+        {
+            mh.ShowErrorInfoWrapper("Please first make a material selection.");
+            return;
+        }
+
         var webScript = GameObject.Find("Root").GetComponent<Web>();
         var changeMatScript = GameObject.Find("Root").GetComponent<ChangeMaterial>();
         WWWForm form = new WWWForm();
@@ -259,7 +276,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
     /// <summary>
     /// Closes the menu.
     /// </summary>
-    void CloseMenu()
+    void CloseMenu(bool isSelectionDone = true)
     {
         var rootVisualElement = GetComponent<UIDocument>().rootVisualElement;
         VisualElement myBox = rootVisualElement.Q<VisualElement>("img-container");

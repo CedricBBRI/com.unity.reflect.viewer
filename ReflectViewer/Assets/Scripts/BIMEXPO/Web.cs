@@ -537,12 +537,10 @@ public class Web : MonoBehaviour
         string picturesDir = Directory.GetParent(currentDir).Parent.Parent.FullName + "\\pictures_carrelages\\";
 
         string phpScript = "http://bimexpo/GetCompatibleTexturesFromDB.php";
-        string[] phpReturnedList = { };
         List<string> textures = new List<string>();
         var meta = surface.GetComponent<Metadata>();
 
         WWWForm form = new WWWForm();
-
         if (meta != null)
         {
             if (surface.name.Contains("Wall") || meta.GetParameter("Category").Contains("Wall"))
@@ -558,36 +556,20 @@ public class Web : MonoBehaviour
                 Debug.Log("The type of surface is not recognized");
                 return textures;
             }
-            using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
-            {
-                www.SendWebRequest();
-                while (www.result == UnityWebRequest.Result.InProgress)
-                {
-                    // Just wait
-                }
-                if (www.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.Log(www.error);
-                }
-                else
-                {
-                    string receivedTilesString = www.downloadHandler.text;
-                    phpReturnedList = receivedTilesString.Split(';');
-                }
-            }
-            bool startRecordingResults = false;
 
-            foreach (string item in phpReturnedList)
+            JSONArray jsonTextures = new JSONArray();
+            bool wait = true;
+            StartCoroutine(GetJSONResultFromDBCoroutine(phpScript, (jsonResult) =>
             {
-                if (startRecordingResults)
-                {
-                    string[] myfiles = Directory.GetFiles(picturesDir + item);
-                    textures.Add(myfiles[0]);
-                }
-                if (item.Contains("RETURNS"))
-                {
-                    startRecordingResults = true;
-                }
+                jsonTextures = jsonResult; // Recuperate jsonResult (which is the argument of the callback method, passed in inside GetJSONResultFromDB. So it is jsonArray.)
+                wait = false;               // This line is reached only upon callback completion inside GetJSONResultFromDB.
+            }, form));
+
+            // Read the JSON result
+            for (int i = 0; i < jsonTextures.Count; i++)
+            {
+                string[] myfiles = Directory.GetFiles(picturesDir + jsonTextures[i].AsObject["chemin_texture"]);
+                textures.Add(myfiles[0]);
             }
             return textures;
         }

@@ -157,7 +157,7 @@ public class MenusHandler : MonoBehaviour
         }
     }
 
-    public void saveScreenshotWrapper(GameObject surface)
+    public void saveScreenshotWrapper(GameObject surface, bool confirm=true)
     {
         StartCoroutine(saveScreenshot(surface));
     }
@@ -226,5 +226,28 @@ public class MenusHandler : MonoBehaviour
 
         // Save it to DB
         webScript.saveScreenshotToDB(filename, camPos, camRot, surface);
+    }
+
+    public void ShowErrorInfoWrapper(string message)
+    {
+        StartCoroutine(ShowErrorInfo(message));
+    }
+    IEnumerator ShowErrorInfo(string message)
+    {
+        var errorInfoMenu = GameObject.Find("ErrorInfo");
+        var rootVisualElement = errorInfoMenu.GetComponent<UIDocument>().rootVisualElement;
+        VisualElement main = rootVisualElement.Q<VisualElement>("main");
+        Label msg = main.Q<Label>("message");
+        msg.text = message;
+        main.style.display = DisplayStyle.Flex;
+        float opac = 100.0f;
+
+        while (opac > 0.0f)
+        {
+            main.style.opacity = opac;
+            opac -= 5.0f;
+            yield return new WaitForSeconds(0.1f);
+        }
+        main.style.display = DisplayStyle.None;
     }
 }

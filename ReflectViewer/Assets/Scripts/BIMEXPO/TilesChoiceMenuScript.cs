@@ -10,7 +10,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
 {
     public string chosenMaterial, chosenTexturePath;
     public GameObject target;
-    private Button okButton, okScButton;
+    private Button okButton, okScButton, cancelButton;
     private bool selectionDone = false;
 
 
@@ -24,6 +24,9 @@ public class TilesChoiceMenuScript : MonoBehaviour
         okButton.clicked += SaveChosenMaterialToDB;
         okButton.clicked += ApplyChosenMaterialToSurface;
         okButton.RegisterCallback<ClickEvent>(ev => CloseMenu(selectionDone));
+
+        cancelButton = rootVisualElement.Q<Button>("cancel");
+        cancelButton.RegisterCallback<ClickEvent>(ev => CloseMenu());
 
         okScButton = rootVisualElement.Q<Button>("ok-screenshot-button");
         okScButton.styleSheets.Add(Resources.Load<StyleSheet>("USS/testVE"));
@@ -290,6 +293,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
             myBox.Remove(item);
         }
         GameObject.Find("TileChoiceMenu").SetActive(false);
+        selectionDone = false;
     }
 
 }

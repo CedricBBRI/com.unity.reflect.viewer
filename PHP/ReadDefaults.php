@@ -1,8 +1,5 @@
 <?php
 
-$surface_type = $_POST["surface_type"];
-$in_out = $_POST["in_out"];
-
 try
 {
 	$bdd = new PDO('mysql:host=localhost;dbname=tpdemo;charset=utf8', 'root', '', array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::MYSQL_ATTR_LOCAL_INFILE => true));
@@ -41,14 +38,13 @@ else
 $result->closeCursor();
 
 // Retrieve default materials
-$getCmd = "SELECT material_name FROM default_materials WHERE surface_type='" . $surface_type . "' AND in_out='" . $in_out . "';";
-//$getCmd = "SELECT * FROM default_materials ;";
+$getCmd = "SELECT * FROM default_materials ;";
 $result = $bdd->query($getCmd);
 
 if ($result->rowCount() > 0) {
   $rows = array();
 	echo "Default material obtention: OK\r\n";
-  echo "RETURNS\r\n";
+  echo "RETURNS;\r\n";
 }
 else 
 {
@@ -57,9 +53,8 @@ else
 
 // output data of each row
 while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-    //$rows[] = $row;
-    echo ";" . $row['material_name'];
+    $rows[] = $row;
 } 
-//echo json_encode($rows);
+echo json_encode($rows);
 $result->closeCursor();
 ?>

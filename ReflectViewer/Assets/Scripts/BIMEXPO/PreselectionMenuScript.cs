@@ -48,7 +48,7 @@ public class PreselectionMenuScript : MonoBehaviour
         wallToggle.RegisterCallback<ClickEvent>(ev => StartCoroutine(UpdateDisplay()));
         slabToggle.RegisterCallback<ClickEvent>(ev => StartCoroutine(UpdateDisplay()));
         produceAmendmentButton.clicked += webScript.ProduceAmendmentWrapper;            // Can't directly use a coroutine in an action, so it's wrapped inside a function.
-        restoreButton.clicked += webScript.RestorePreviousConfig;
+        restoreButton.RegisterCallback<ClickEvent>(ev => StartCoroutine(webScript.RestorePreviousConfig()));
 
         var DBScript = GameObject.Find("Root").GetComponent<DBInteractions>();
 

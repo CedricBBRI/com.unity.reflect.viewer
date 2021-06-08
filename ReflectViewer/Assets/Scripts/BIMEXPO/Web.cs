@@ -8,6 +8,7 @@ using UnityEngine.Networking;
 using UnityEngine.Reflect; //Unity.Reflect has to be added to the asmdef in the current folder
 using System.Collections.ObjectModel;
 using Unity.Reflect.Viewer.UI;
+using SimpleJSON;
 
 public class Web : MonoBehaviour
 {
@@ -70,7 +71,8 @@ public class Web : MonoBehaviour
             if (!tablesCreated)
             {
                 StartCoroutine(createBuildingTable());
-                StartCoroutine(SetDefaultMaterials());
+                //StartCoroutine(SetDefaultMaterials());
+                StartCoroutine(SetDefaultMaterialsJSON()); 
                 var fao = GameObject.Find("Root").GetComponent<FindAllObjects>();
                 fao.FindAll("Wall");
                 tablesCreated = true;
@@ -514,12 +516,10 @@ public class Web : MonoBehaviour
         string picturesDir = Directory.GetParent(currentDir).Parent.Parent.FullName + "\\pictures_carrelages\\";
 
         string phpScript = "http://bimexpo/GetCompatibleTexturesFromDB.php";
-        string[] phpReturnedList = { };
         List<string> textures = new List<string>();
         var meta = surface.GetComponent<Metadata>();
 
         WWWForm form = new WWWForm();
-
         if (meta != null)
         {
             if (surface.name.Contains("Wall") || meta.GetParameter("Category").Contains("Wall"))
@@ -535,36 +535,20 @@ public class Web : MonoBehaviour
                 Debug.Log("The type of surface is not recognized");
                 return textures;
             }
-            using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
-            {
-                www.SendWebRequest();
-                while (www.result == UnityWebRequest.Result.InProgress)
-                {
-                    // Just wait
-                }
-                if (www.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.Log(www.error);
-                }
-                else
-                {
-                    string receivedTilesString = www.downloadHandler.text;
-                    phpReturnedList = receivedTilesString.Split(';');
-                }
-            }
-            bool startRecordingResults = false;
 
-            foreach (string item in phpReturnedList)
+            JSONArray jsonTextures = new JSONArray();
+            bool wait = true;
+            StartCoroutine(GetJSONResultFromDBCoroutine(phpScript, (jsonResult) =>
             {
-                if (startRecordingResults)
-                {
-                    string[] myfiles = Directory.GetFiles(picturesDir + item);
-                    textures.Add(myfiles[0]);
-                }
-                if (item.Contains("RETURNS"))
-                {
-                    startRecordingResults = true;
-                }
+                jsonTextures = jsonResult; // Recuperate jsonResult (which is the argument of the callback method, passed in inside GetJSONResultFromDB. So it is jsonArray.)
+                wait = false;               // This line is reached only upon callback completion inside GetJSONResultFromDB.
+            }, form));
+
+            // Read the JSON result
+            for (int i = 0; i < jsonTextures.Count; i++)
+            {
+                string[] myfiles = Directory.GetFiles(picturesDir + jsonTextures[i].AsObject["chemin_texture"]);
+                textures.Add(myfiles[0]);
             }
             return textures;
         }
@@ -814,9 +798,26 @@ public class Web : MonoBehaviour
         return comment;
     }
 
-    private IEnumerator GetJSONResultFromDB(string scriptName, Action<string> callback)
+    /// <summary>
+    /// Flexible function that gets the result of a PHP script as a JSON array, and that uses a callback function to then pass that result.
+    /// </summary>
+    /// <param name="scriptName">The PHP script to be called via WebRequest.</param>
+    /// <param name="callback">The callback function that will be used to retrieve the JSON array via its argument.</param>
+    /// <returns></returns>
+    private IEnumerator GetJSONResultFromDBCoroutine(string scriptName, Action<JSONArray> callback, WWWForm form = null)
     {
-        using (UnityWebRequest www = UnityWebRequest.Get(scriptName))
+        string[] phpReturnedList = { };
+        UnityWebRequest myWWW;
+        if (form != null)
+        {
+            myWWW = UnityWebRequest.Post(scriptName, form);
+        }
+        else
+        {
+            myWWW = UnityWebRequest.Get(scriptName);
+        }
+
+        using (UnityWebRequest www = myWWW)
         {
             yield return www.SendWebRequest();
             if (www.result != UnityWebRequest.Result.Success)
@@ -825,15 +826,95 @@ public class Web : MonoBehaviour
             }
             else
             {
-                string jsonArray = www.downloadHandler.text;
-                Debug.Log(jsonArray);
-                callback(jsonArray);    // Once the results are obtained, pass them on to callback.
+                // Get the response from DB and split messages from json response
+                string receivedTilesString = www.downloadHandler.text;
+                string jsonArrayString = "";
+                phpReturnedList = receivedTilesString.Split(';');
+                bool startRecordingResults = false;
+                foreach (string item in phpReturnedList)
+                {
+                    if (startRecordingResults)
+                    {
+                        jsonArrayString = item;
+                        break;
+                    }
+                    if (item.Contains("RETURNS"))
+                    {
+                        startRecordingResults = true;
+                    }
+                }
+
+                // Parse the JSON result into a JSONArray
+                JSONArray jsonArray = JSON.Parse(jsonArrayString) as JSONArray;
+
+                // Once the results are obtained, pass them on to callback.
+                callback(jsonArray);    
             }
         }
     }
 
     /// <summary>
     /// Automatically sets default materials on the building, based on materials identified as such in the DB.
+    /// </summary>
+    private IEnumerator SetDefaultMaterialsJSON()
+    {
+        List<List<string>> defaultsList = new List<List<string>> { };
+        string phpScript = "http://bimexpo/ReadDefaults.php";
+        JSONArray jsonMaterials = new JSONArray();
+
+        bool wait = true;
+        StartCoroutine(GetJSONResultFromDBCoroutine(phpScript, (jsonResult) =>
+        {
+            jsonMaterials = jsonResult; // Recuperate jsonResult (which is the argument of the callback method, passed in inside GetJSONResultFromDB. So it is jsonArray.)
+            wait = false;               // This line is reached only upon callback completion inside GetJSONResultFromDB.
+        }));
+
+        while (wait)    // Wait for the call to DB in GetJSONResultFromDB is done, so we're sure we have now retrieved jsonResult inside jsonMaterials.
+        {
+            yield return null;
+        }
+
+        // Read the JSON result
+        for (int i = 0; i < jsonMaterials.Count; i++)
+        {
+            string surfaceType = jsonMaterials[i].AsObject["surface_type"];
+            string inOut = jsonMaterials[i].AsObject["in_out"];
+            string matName = jsonMaterials[i].AsObject["material_name"];
+            List<string> subList = new List<string>();
+            defaultsList.Add(new List<string> { surfaceType, inOut, matName });
+        }
+
+        foreach (List<string> subList in defaultsList)
+        {
+            // Load the material
+            GameObject root = GameObject.Find("Root");
+            Component[] children = root.GetComponentsInChildren(typeof(Transform));
+            Material matToApply = Resources.Load<Material>("defaults/materials/" + subList[2]);
+            matToApply.shader = Shader.Find("UnityReflect/URPOpaque");
+
+            // Detect brick walls and apply material
+            foreach (Transform tr in children)
+            {
+                var meta = tr.gameObject.GetComponent<Metadata>();
+                if (meta != null)
+                {
+                    if (meta.GetParameter("Type").Contains("Brique") && subList[1] == "out")
+                    {
+                        tr.gameObject.GetComponent<MeshRenderer>().material = matToApply;
+                    }
+                    else if (meta.GetParameter("Type").Contains("Carrelage_Mural") && subList[1] == "in")
+                    {
+                        tr.gameObject.GetComponent<MeshRenderer>().material = matToApply;
+                    }
+                }
+            }
+        }
+
+        yield return null;
+    }
+
+    /// <summary>
+    /// [OBSOLETE] Automatically sets default materials on the building, based on materials identified as such in the DB.
     /// </summary>
     private IEnumerator SetDefaultMaterials()
     {
@@ -922,53 +1003,38 @@ public class Web : MonoBehaviour
     /// Restores the previous choices a user may have done in another session.
     /// These choices are retrieved from DB and overwrite any choices in the current session.
     /// </summary>
-    public void RestorePreviousConfig()
+    public IEnumerator RestorePreviousConfig()
     {
-        string phpScript = "http://bimexpo/GetChoices.php";
-        string[] phpReturnedList = { };
         WWWForm form = new WWWForm();
         form.AddField("clientId", clientId);
         form.AddField("projectId", projectId);
-        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        string phpScript = "http://bimexpo/GetChoices.php";
+        JSONArray jsonResponse = new JSONArray();
+        bool wait = true;
+        StartCoroutine(GetJSONResultFromDBCoroutine(phpScript, (jsonResult) =>
         {
-            www.SendWebRequest();
-            while (www.result == UnityWebRequest.Result.InProgress)
-            {
-                // Just wait
-            }
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.Log(www.error);
-            }
-            else
-            {
-                string receivedTilesString = www.downloadHandler.text;
-                phpReturnedList = receivedTilesString.Split(';');
-            }
+            jsonResponse = jsonResult; // Recuperate jsonResult (which is the argument of the callback method, passed in inside GetJSONResultFromDB. So it is jsonArray.)
+            wait = false;              // This line is reached only upon callback completion inside GetJSONResultFromDB.
+        }, form));
+
+        while (wait)    // Wait for the call to DB in GetJSONResultFromDB is done, so we're sure we have now retrieved jsonResult inside jsonMaterials.
+        {
+            yield return null;
         }
-        bool startRecordingResults = false;
-        List<List<string>> idsAndLibelleAndSession = new List<List<string>>();
+
+        // Read the JSON result
         DateTime mostRecentSession = DateTime.MinValue;
-        foreach (string item in phpReturnedList)
+        List<List<string>> idsAndLibelleAndSession = new List<List<string>>();
+        for (int i = 0; i < jsonResponse.Count; i++)
         {
-            if (startRecordingResults)
-            {
-                string[] id_libelle_session = item.Split(',');
-                List<string> subList = new List<string>();
-                foreach (string item2 in id_libelle_session)
+            string id_surface = jsonResponse[i].AsObject["id_surface"];
+            string libelle = jsonResponse[i].AsObject["libelle"];
+            string sess = jsonResponse[i].AsObject["session"];
+            if (mostRecentSession == DateTime.MinValue)
                 {
-                    subList.Add(item2);
+                    mostRecentSession = DateTime.Parse(sess);
                 }
-                if (mostRecentSession == DateTime.MinValue)
-                {
-                    mostRecentSession = DateTime.Parse(id_libelle_session[2]);
-                }
-                idsAndLibelleAndSession.Add(subList);
-            }
-            if (item.Contains("RETURNS"))
-            {
-                startRecordingResults = true;
-            }
+            idsAndLibelleAndSession.Add(new List<string> { id_surface, libelle, sess });
         }
 
         // Now actually restore it

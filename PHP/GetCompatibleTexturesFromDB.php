@@ -31,14 +31,17 @@ else
 }
 
 if ($result->rowCount() > 0) {
+	$rows = array();
     echo "RETURNS\r\n";
 }
 
 // output data of each row
 while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-    echo ";" . $row['chemin_texture'];
+    //echo ";" . $row['chemin_texture'];
+    $rows[] = $row;
 } 
 
 //Close the query access
+echo json_encode($rows);
 $result->closeCursor();
 ?>

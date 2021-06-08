@@ -25,14 +25,16 @@ else
 }
 
 if ($result->rowCount() > 0) {
-    echo "RETURNS\r\n";
+	$rows = array();
+    echo "RETURNS;\r\n";
 }
 
 // output data of each row
 while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-    echo ";" . $row['id_surface'] . "," . $row['libelle'] . "," . $row['session'];
+	$rows[] = $row;
 } 
 
 //Close the query access
+echo json_encode($rows);
 $result->closeCursor();
 ?>

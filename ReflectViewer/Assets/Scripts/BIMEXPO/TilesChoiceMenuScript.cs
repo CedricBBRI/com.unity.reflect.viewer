@@ -21,7 +21,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
         okButton = rootVisualElement.Q<Button>("ok-button");
         okButton.styleSheets.Add(Resources.Load<StyleSheet>("USS/testVE"));
         okButton.AddToClassList("ok-but");
-        okButton.clicked += SaveChosenMaterialToDB;
+        okButton.RegisterCallback<ClickEvent>(ev => SaveChosenMaterialToDB());
         okButton.clicked += ApplyChosenMaterialToSurface;
         okButton.RegisterCallback<ClickEvent>(ev => CloseMenu(selectionDone));
 
@@ -32,7 +32,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
         okScButton.styleSheets.Add(Resources.Load<StyleSheet>("USS/testVE"));
         okScButton.AddToClassList("ok-but");
      
-        okScButton.clicked += SaveChosenMaterialToDB;
+        okScButton.RegisterCallback<ClickEvent>(ev => SaveChosenMaterialToDB());
         okScButton.clicked += ApplyChosenMaterialToSurface;
 
         var mh = GameObject.Find("Root").GetComponent<MenusHandler>();
@@ -181,26 +181,47 @@ public class TilesChoiceMenuScript : MonoBehaviour
 
     /// <summary>
     /// Saves the choice of a tile on a given surface. This will save the choice in the DB.
+    /// If no argument are provided, it uses the class variables chosenMaterial and selectedObject for the material and the surface, respectively.
+    /// Otherwise, it uses the arguments provided.
     /// </summary>
-    void SaveChosenMaterialToDB()
+    public void SaveChosenMaterialToDB(GameObject surface = null, string material = null)
     {
-        // First check if a selection was done
+        var changeMatScript = GameObject.Find("Root").GetComponent<ChangeMaterial>();
+        string matToApply = chosenMaterial;
+        GameObject surfaceToBeApplied = changeMatScript.selectedObject;
+
+        // First check if both arguments were provided or not
+        bool argsProvided = false;
+        if (surface != null && material != null)
+        {
+            argsProvided = true;
+        }
+        if (material != null)
+        {
+            matToApply = material;
+        }
+        if (surface != null)
+        {
+            surfaceToBeApplied = surface;
+        }
+
+        // Then, if no arguments were provided, check if a selection was done
         var mh = GameObject.Find("Root").GetComponent<MenusHandler>();
-        if (!selectionDone)
+        if (!selectionDone && !argsProvided)
         {
             mh.ShowErrorInfoWrapper("Please first make a material selection.");
             return;
         }
 
         var webScript = GameObject.Find("Root").GetComponent<Web>();
-        var changeMatScript = GameObject.Find("Root").GetComponent<ChangeMaterial>();
+        
         WWWForm form = new WWWForm();
-        form.AddField("surfaceId", changeMatScript.selectedObject.GetComponent<Metadata>().GetParameter("Id"));
-        form.AddField("tileName", chosenMaterial);
+        form.AddField("surfaceId", surfaceToBeApplied.GetComponent<Metadata>().GetParameter("Id"));
+        form.AddField("tileName", matToApply);
         form.AddField("clientId", webScript.clientId);
         form.AddField("projectId", webScript.projectId);
-        form.AddField("tilePrice", webScript.GetTilePriceFromLibelle(chosenMaterial).ToString());
-        form.AddField("surfaceArea", changeMatScript.selectedObject.GetComponent<Metadata>().GetParameter("Area"));
+        form.AddField("tilePrice", webScript.GetTilePriceFromLibelle(matToApply).ToString());
+        form.AddField("surfaceArea", surfaceToBeApplied.GetComponent<Metadata>().GetParameter("Area"));
         form.AddField("session", webScript.sessionSqlFormattedDate);
 
         using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/SaveMaterialChoiceToDB.php", form))

@@ -61,9 +61,16 @@ public class Web : MonoBehaviour
                 go.SetActive(true);
             }
         }
-        UIStateManager.stateChanged += UIStateManager_stateChanged; // Listening to UI state change in order to know when the building is loaded.
+        // Listening to UI state change in order to know when the building is loaded.
+        // The 'stateChanged' event handler is signaled when the state of the UI has changed (see UIStateManagerAction, line 148).
+        // It takes a UIStateData argument. Indeed, the stateChanged event handler is invoked with 'm_UIStateData' as argument.
+        UIStateManager.stateChanged += UIStateManager_stateChanged; 
     }
 
+    /// <summary>
+    /// Event listener that checks for the building to be loaded in order to create some tables and perform some startup actions.
+    /// </summary>
+    /// <param name="obj">The UIStateData object the event handler was invoked with. In this case it is the 'm_UIStateData' field of the UIStateManager class</param>
     private void UIStateManager_stateChanged(UIStateData obj)
     {
         if (obj.progressData.totalCount > 0 && obj.progressData.currentProgress == obj.progressData.totalCount)    // Then the building is fully loaded
@@ -71,7 +78,6 @@ public class Web : MonoBehaviour
             if (!tablesCreated)
             {
                 StartCoroutine(createBuildingTable());
-                //StartCoroutine(SetDefaultMaterials());
                 StartCoroutine(SetDefaultMaterialsJSON()); 
                 var fao = GameObject.Find("Root").GetComponent<FindAllObjects>();
                 fao.FindAll("Wall");
@@ -80,6 +86,10 @@ public class Web : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Prepares the user's tile choices table in the DB. 
+    /// </summary>
+    /// <returns></returns>
     IEnumerator CreateUserChoicesTable()
     {
         WWWForm form = new WWWForm();
@@ -99,6 +109,13 @@ public class Web : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Creates a test DB of (all) the available tiles. This table is created from a csv file.
+    /// </summary>
+    /// <param name="csvPath">The path to the csv that is to be used to create the table</param>
+    /// <param name="tableName">The name to be given to the table</param>
+    /// <returns></returns>
     IEnumerator CreateTableFromCSV(string csvPath, string tableName)
     {
         WWWForm form = new WWWForm();
@@ -121,6 +138,9 @@ public class Web : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Creates a table in DB that represents the whole building. The table contains, for each Wall or Floor detected, its Id, Area, and Level ('Base Constraint').
+    /// </summary>
     IEnumerator createBuildingTable()
     {
         yield return new WaitForSeconds(10); // Waits 10s for the model to be loaded before creating the table
@@ -170,7 +190,6 @@ public class Web : MonoBehaviour
     /// <summary>
     /// Gets the list of the names ('libelles') of all the preselected tiles in the project.
     /// </summary>
-    //public IEnumerator RetrievePreselectedTiles()
     public void RetrievePreselectedTiles(string category = "all")
     {
         //yield return new WaitForSeconds(10); // If this function is called immediately after CreateTableFromCSV, it needs some time for the table to actually be created

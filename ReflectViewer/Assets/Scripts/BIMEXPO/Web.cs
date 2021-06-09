@@ -80,10 +80,6 @@ public class Web : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-    }
-
     IEnumerator CreateUserChoicesTable()
     {
         WWWForm form = new WWWForm();
@@ -1061,6 +1057,7 @@ public class Web : MonoBehaviour
                         if (meta.GetParameter("Id") == item[0])
                         {
                             tcms.ApplyMaterialToSurface(item[1], tr.gameObject);
+                            tcms.SaveChosenMaterialToDB(tr.gameObject, item[1]);
                             continue;
                         }
                     }

@@ -10,7 +10,7 @@ catch(Exception $e)
 }
 
 // Create the table
-$tableCreation = "CREATE TABLE IF NOT EXISTS default_materials ( material_name VARCHAR(50) NOT NULL, surface_type VARCHAR(50) NOT NULL, in_out VARCHAR(5) NOT NULL, PRIMARY KEY (surface_type, in_out)) CHARACTER SET 'utf8' ENGINE=INNODB;";
+$tableCreation = "CREATE TABLE IF NOT EXISTS default_materials ( material_name VARCHAR(50) NOT NULL, surface_type VARCHAR(50) NOT NULL, in_out VARCHAR(5) NOT NULL, tiled TINYINT NOT NULL, PRIMARY KEY (surface_type, in_out, tiled)) CHARACTER SET 'utf8' ENGINE=INNODB;";
 $result = $bdd->query($tableCreation);
 
 if ($result->errorCode() == 00000) 
@@ -24,7 +24,7 @@ else
 $result->closeCursor();
 
 //Insert comment
-$insertCmd = "REPLACE INTO default_materials VALUES ('brick_4', 'mur', 'out'), ('Ornamental_Tiles_basecolor1', 'mur','in');";
+$insertCmd = "REPLACE INTO default_materials VALUES ('brick_4', 'mur', 'out', '0'), ('Ornamental_Tiles_basecolor1', 'mur','in', '1'), ('paintedPlaster', 'mur', 'in', '0'), ('woodFloor', 'sol', 'in', '0'), ('tiledFloor', 'sol', 'in', '1');";
 $result = $bdd->query($insertCmd);
 
 if ($result->errorCode() == 00000) 

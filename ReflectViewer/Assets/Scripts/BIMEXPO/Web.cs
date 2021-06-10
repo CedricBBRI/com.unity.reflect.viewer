@@ -901,8 +901,9 @@ public class Web : MonoBehaviour
             string surfaceType = jsonMaterials[i].AsObject["surface_type"];
             string inOut = jsonMaterials[i].AsObject["in_out"];
             string matName = jsonMaterials[i].AsObject["material_name"];
+            string tiled = jsonMaterials[i].AsObject["tiled"];
             List<string> subList = new List<string>();
-            defaultsList.Add(new List<string> { surfaceType, inOut, matName });
+            defaultsList.Add(new List<string> { surfaceType, inOut, matName, tiled });
         }
 
         foreach (List<string> subList in defaultsList)
@@ -919,11 +920,19 @@ public class Web : MonoBehaviour
                 var meta = tr.gameObject.GetComponent<Metadata>();
                 if (meta != null)
                 {
-                    if (meta.GetParameter("Type").Contains("Brique") && subList[1] == "out")
+                    if (meta.GetParameter("Type").Contains("Brique") && subList[0] == "mur" && subList[1] == "out")
                     {
                         tr.gameObject.GetComponent<MeshRenderer>().material = matToApply;
                     }
-                    else if (meta.GetParameter("Type").Contains("Carrelage_Mural") && subList[1] == "in")
+                    else if (meta.GetParameter("Type").Contains("Carrelage_Mural") && subList[1] == "in" && subList[0] == "mur" && subList[3] == "1")
+                    {
+                        tr.gameObject.GetComponent<MeshRenderer>().material = matToApply;
+                    }
+                    else if (meta.GetParameter("Type").Contains("Plafonnage") && subList[1] == "in" && subList[0] == "mur" && subList[3] == "0")
+                    {
+                        tr.gameObject.GetComponent<MeshRenderer>().material = matToApply;
+                    }
+                    else if (meta.GetParameter("Type").Contains("Carrelage") && meta.GetParameter("Family").Contains("Floor") && subList[0] == "sol" && subList[1] == "in" && subList[3] == "1")
                     {
                         tr.gameObject.GetComponent<MeshRenderer>().material = matToApply;
                     }

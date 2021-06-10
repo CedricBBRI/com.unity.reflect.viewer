@@ -757,6 +757,11 @@ public class Web : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Retrieves the comment from the last session which is associated to the surface passed as argument.
+    /// </summary>
+    /// <param name="surface">The surface for which the comment is to be retrieved</param>
+    /// <returns>The comment</returns>
     public string GetComment(GameObject surface)
     {
         // Getting surface ID
@@ -804,6 +809,7 @@ public class Web : MonoBehaviour
             if (startRecordingResults)
             {
                 comment = item;
+                break;
             }
             if (item.Contains("RETURNS"))
             {

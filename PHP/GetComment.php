@@ -14,7 +14,7 @@ catch(Exception $e)
 }
 
 // Get comment
-$getCmd = "SELECT comment FROM `c" . $clientId . "_p" . $projectId . "_comments` WHERE id_surface='" . $surfaceID . "';";
+$getCmd = "SELECT comment, session FROM `c" . $clientId . "_p" . $projectId . "_comments` WHERE id_surface='" . $surfaceID . "' ORDER BY session DESC;";
 $result = $bdd->query($getCmd);
 
 if ($result->errorCode() == 00000) 
@@ -32,7 +32,7 @@ if ($result->rowCount() > 0) {
 
 // output data of each row
 while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-    echo ";" . $row['id_surface'];
+    echo ";" . $row['comment'];
 } 
 
 //Close the query access

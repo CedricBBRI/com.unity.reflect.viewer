@@ -189,15 +189,8 @@ namespace UnityEngine.Reflect
             }
             foreach (Texture tex in texPoss) //Generate a tile material for every possible texture that doesn't have one yet
             {
-                //Material tempMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
                 Material tempMat = new Material(Shader.Find("Shader Graphs/testshaderlit"));
-                //tempMat.SetFloat("_MortarSize", 0.02f);
                 tempMat.mainTexture = tex;
-                //tempMat.mainTexture = tex;
-
-                //Material tempMat = new Material(Shader.Find("Custom/TileShader"));
-                //tempMat.mainTexture = tex;
-                //tempMat.SetFloat("_MortarSize", mortarWidthArray[mortarSizeDrop.value]);
                 matPoss.Add(tempMat);
             }
 
@@ -211,7 +204,6 @@ namespace UnityEngine.Reflect
                 }
                 if (matPoss.Count() >= 1)
                 {
-                    //Debug.Log("draw >= 1\n");
                     for (int i = 0; i < this.matPoss.Count(); i++)// Material mat in matPossible)
                     {
                         Material mat = new Material(this.matPoss[i]);
@@ -234,7 +226,7 @@ namespace UnityEngine.Reflect
         /// Apply an outline around object
         /// </summary>
         /// <param name="obj">The GameObject to be highlighted</param>
-        private void HighlightObject(GameObject obj)
+        public void HighlightObject(GameObject obj)
         {
             OutlineUI outline;
             if (obj.GetComponent<OutlineUI>() == null)
@@ -246,7 +238,7 @@ namespace UnityEngine.Reflect
                 outline = obj.GetComponent<OutlineUI>();
             }
             outline.OutlineMode = OutlineUI.Mode.OutlineAll;
-            outline.OutlineColor = Color.yellow;
+            outline.OutlineColor = Color.cyan;
             outline.OutlineWidth = 5f;
         }
 

@@ -38,7 +38,10 @@ public class FaceMerging : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (selectedObject != null)
+        {
+            changeMatScript.HighlightObject(selectedObject);
+        }
         selectedObject = changeMatScript.selectedObject;
         if (selectedObject != null && selectedObject.GetComponent<Metadata>() != null)
         {

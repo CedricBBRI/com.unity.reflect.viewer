@@ -7,6 +7,7 @@ public class CustomComment : VisualElement
     public CustomComment(string comment = "...")
     {
         textElem = new TextField();
+        textElem.tripleClickSelectsLine = true;
         textElem.multiline = true;
         textElem.style.flexDirection = FlexDirection.Column;
         textElem.style.flexGrow = 1;

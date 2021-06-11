@@ -17,12 +17,10 @@ public class PreselectionMenuScript : MonoBehaviour
     private List<string> tileNames, wallTileNames, slabTileNames;
     private string allTileNames;
     private string tilePicturesFolder = "";
+    public Toggle highlight { get; private set; }
 
     void OnEnable()
     {
-        //Disable player camera rotation until the preselection is made
-        //GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>() = false;
-
         string currentDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         tilePicturesFolder = Directory.GetParent(currentDir).Parent.Parent.FullName + "\\pictures_carrelages\\";
 
@@ -33,6 +31,7 @@ public class PreselectionMenuScript : MonoBehaviour
         slabToggle = rootVisualElement.Q<Toggle>("slabToggle");
         showHideMenuButton = rootVisualElement.Q<Button>("show-hide-menu");
         mainMenu = rootVisualElement.Q<VisualElement>("main-menu");
+        highlight = rootVisualElement.Q<Toggle>("includedToggle");
 
         // Also handling the amendment production from this menu
         produceAmendmentButton = rootVisualElement.Q<Button>("produce-amendment");

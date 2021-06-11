@@ -13,6 +13,8 @@ public class TilesChoiceMenuScript : MonoBehaviour
     private Button okButton, okScButton, cancelButton;
     private bool selectionDone = false;
 
+    //CEDRIC
+    ChangeMaterial changeMatScript;
 
     void OnEnable()
     {
@@ -127,6 +129,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
             rend.sharedMaterials = mats;
         }
         target.GetComponent<MeshRenderer>().material = tempMat;
+        changeMatScript.HighlightObject(target, false);
         return;
     }
 
@@ -176,6 +179,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
             rend.sharedMaterials = mats;
         }
         surface.GetComponent<MeshRenderer>().material = tempMat;
+
         return;
     }
 

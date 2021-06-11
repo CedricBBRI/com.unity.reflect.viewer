@@ -133,6 +133,10 @@ namespace UnityEngine.Reflect
 
         GameObject ClickObjects() //Returns the gameobject that is clicked
         {
+            if (selectedObject != null)
+            {
+                HighlightObject(selectedObject, false);
+            }
             Ray ray;
             GameObject target = null;
             if (Input.touchCount > 2 && Input.touches[2].phase == TouchPhase.Began)
@@ -152,6 +156,7 @@ namespace UnityEngine.Reflect
                     hitPoint = hit.point;// - ray.GetPoint(0.01f);
                 }
             }
+            HighlightObject(target, true);
             return target;
         }
 
@@ -226,20 +231,37 @@ namespace UnityEngine.Reflect
         /// Apply an outline around object
         /// </summary>
         /// <param name="obj">The GameObject to be highlighted</param>
-        public void HighlightObject(GameObject obj)
+        public void HighlightObject(GameObject obj, bool on)
         {
             OutlineUI outline;
-            if (obj.GetComponent<OutlineUI>() == null)
+            Destroy(obj.GetComponent<OutlineUI>());
+            if (on)
             {
-                outline = obj.AddComponent<OutlineUI>();
+                if (obj.GetComponent<OutlineUI>() == null)
+                {
+                    outline = obj.AddComponent<OutlineUI>();
+                }
+                else
+                {
+                    outline = obj.GetComponent<OutlineUI>();
+                }
+                outline.OutlineMode = OutlineUI.Mode.OutlineAll;
+                outline.OutlineColor = Color.cyan;
+                outline.OutlineWidth = 5f;
+            }
+        }
+        public void ChangeObjectEmission(GameObject obj, Color col)
+        {
+            Material newMaterialCopy = new Material(obj.GetComponent<Renderer>().material);
+            if (newMaterialCopy.GetColor("_EmissionColor").Equals(col))
+            {
+                newMaterialCopy.SetColor("_EmissionColor", Color.black);
             }
             else
             {
-                outline = obj.GetComponent<OutlineUI>();
+                newMaterialCopy.SetColor("_EmissionColor", col);
             }
-            outline.OutlineMode = OutlineUI.Mode.OutlineAll;
-            outline.OutlineColor = Color.cyan;
-            outline.OutlineWidth = 5f;
+            obj.GetComponent<MeshRenderer>().material = newMaterialCopy;
         }
 
         public void ChangeMaterialClick(Material mat, GameObject selectedObject) //Changes materials (all of them) of selectedObject to mat
@@ -252,7 +274,7 @@ namespace UnityEngine.Reflect
             }
             //TEST
 
-            HighlightObject(selectedObject);
+            HighlightObject(selectedObject, true);
 
             // AC - 19/05/21 - Here bring up my menu offering the possibility of choosing the material to apply.
             var menuHandler = GameObject.Find("Root").GetComponent<MenusHandler>();

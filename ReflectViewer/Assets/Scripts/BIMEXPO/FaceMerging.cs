@@ -40,7 +40,8 @@ public class FaceMerging : MonoBehaviour
     {
         if (selectedObject != null)
         {
-            changeMatScript.HighlightObject(selectedObject);
+            //changeMatScript.ChangeObjectEmission(selectedObject, Color.green);
+            //changeMatScript.HighlightObject(selectedObject, true);
         }
         selectedObject = changeMatScript.selectedObject;
         if (selectedObject != null && selectedObject.GetComponent<Metadata>() != null)

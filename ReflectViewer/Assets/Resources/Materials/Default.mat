@@ -156,6 +156,7 @@ Material:
     - Vector1_54155a8a551a4d46ad2a42899d843f30: 0.8
     - Vector1_57362EB6: 0.03
     - Vector1_92CD0678: 4
+    - Vector1_93e63ec97935408c8aace955a84ad7d0: -1
     - Vector1_c5788da938914662b2086174c9312b05: 0
     - _AlphaClip: 0
     - _Blend: 0
@@ -224,6 +225,7 @@ Material:
     - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}
     - _Color: {r: 0.6415094, g: 0.19063723, b: 0.19063723, a: 1}
     - _EMISSION_COLOR: {r: 0, g: 0, b: 0, a: 0}
+    - _Emission: {r: 0, g: 1, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _OutlineColor: {r: 1, g: 0.39999998, b: 0, a: 0}
     - _SPECULAR_COLOR: {r: 1, g: 1, b: 1, a: 0}

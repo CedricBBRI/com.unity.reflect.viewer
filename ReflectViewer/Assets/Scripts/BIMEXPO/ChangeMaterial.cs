@@ -264,17 +264,18 @@ namespace UnityEngine.Reflect
             obj.GetComponent<MeshRenderer>().material = newMaterialCopy;
         }
 
-        public void ChangeMaterialClick(Material mat, GameObject selectedObject) //Changes materials (all of them) of selectedObject to mat
+        public void ChangeMaterialClick(Material mat, GameObject go) //Changes materials (all of them) of selectedObject to mat
         {
-            functionReplaceCalled = true;
+            //functionReplaceCalled = true;
             //TEST
             if (matPoss.Count >= 1)
             {
                 mat = matPoss[0];
             }
             //TEST
-
-            HighlightObject(selectedObject, true);
+            
+            HighlightObject(go, true);
+            selectedObject = go;
 
             // AC - 19/05/21 - Here bring up my menu offering the possibility of choosing the material to apply.
             var menuHandler = GameObject.Find("Root").GetComponent<MenusHandler>();

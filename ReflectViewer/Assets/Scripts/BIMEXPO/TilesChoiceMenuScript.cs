@@ -130,6 +130,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
         }
         target.GetComponent<MeshRenderer>().material = tempMat;
         changeMatScript.HighlightObject(target, false);
+        changeMatScript.functionReplaceCalled = true;
         return;
     }
 

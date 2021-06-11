@@ -38,8 +38,12 @@ public class FaceMerging : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-        selectedObject = changeMatScript.selectedObject;
+        if (changeMatScript.selectedObject != null)
+        {
+            //changeMatScript.ChangeObjectEmission(selectedObject, Color.green);
+            //changeMatScript.HighlightObject(selectedObject, true);
+            selectedObject = changeMatScript.selectedObject;
+        }
         if (selectedObject != null && selectedObject.GetComponent<Metadata>() != null)
         {
             string test = selectedObject.GetComponent<Metadata>().GetParameter("Area");
@@ -88,21 +92,42 @@ public class FaceMerging : MonoBehaviour
                     listOfListCustom[curList].Add(selectedObject);
                     foreach (GameObject go in listOfListCustom[curList])
                     {
-                        changeMatScript.ChangeMaterialClick(defMat, go);
+                        //changeMatScript.ChangeMaterialClick(defMat, go);
+                        changeMatScript.HighlightObject(go, true);
                     }
                 }
                 for (int i = 0; i < listOfListCustom.Count; i++) //Remove it in any other list
                 {
-                    if (listOfListCustom[i].Contains(selectedObject))
+                    if (i != curList && listOfListCustom[i].Contains(selectedObject))
                     {
                         listOfListCustom[i].Remove(selectedObject);
                         foreach (GameObject go in listOfListCustom[i])
                         {
-                            changeMatScript.ChangeMaterialClick(defMat, go);
+                            //changeMatScript.ChangeMaterialClick(defMat, go);
+                            changeMatScript.HighlightObject(go, false);
                         }
                     }
                 }
+
             }
+
+            //DEBUG
+            foreach (GameObject go in listOfListCustom[curList])
+            {
+                //changeMatScript.ChangeMaterialClick(defMat, go);
+                changeMatScript.HighlightObject(go, true);
+            }
+
+            if (changeMatScript.functionReplaceCalled == true) //When the function to replace a material is called anywhere, check if the object is part of any merge list and if so change materials on all of them
+            {
+                foreach (GameObject go in listOfListCustom[curList])
+                {
+                    Debug.Log(go.name);
+                    changeMatScript.ChangeMaterialClick(selectedObject.GetComponent<Renderer>().material, go);
+                }
+                changeMatScript.functionReplaceCalled = false;
+            }
+            //DEBUG
 
             if (changeMatScript.functionReplaceCalled == true) //When the function to replace a material is called anywhere, check if the object is part of any merge list and if so change materials on all of them
             {

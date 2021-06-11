@@ -12011,6 +12011,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 8273371141554147057, guid: 03b7f57c7f66a0644a5b179403d1ec5d,
         type: 3}
+      propertyPath: field of view
+      value: 75
+      objectReference: {fileID: 0}
+    - target: {fileID: 8273371141554147057, guid: 03b7f57c7f66a0644a5b179403d1ec5d,
+        type: 3}
       propertyPath: far clip plane
       value: 2999.9993
       objectReference: {fileID: 0}

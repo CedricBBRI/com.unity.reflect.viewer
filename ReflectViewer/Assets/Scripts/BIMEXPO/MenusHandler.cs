@@ -35,15 +35,6 @@ public class MenusHandler : MonoBehaviour
     }
     private void Update()
     {
-        /*
-        //Wait for the building to be loaded, then show the preselection button
-        if (GameObject.Find("Root").transform.childCount > 0 && !preselectionButtonOn)
-        {
-            StartCoroutine(ShowButtons());
-            preselectionButtonOn = true;
-        }
-        */
-
         bool preselectionDone = GameObject.Find("Root").GetComponent<Web>().preselectionDone;
 
         // Look out for comments input, only if the tile choice menu is already up
@@ -57,7 +48,12 @@ public class MenusHandler : MonoBehaviour
             m_MyEvent.RemoveAllListeners();
         }
 
-        // Look for surfaces that are not tiled by default (not included in price)
+        // Look for surfaces that are not tiled by default (not included in price), only if corresponding checkbox is ticked
+        var pm = GameObject.Find("PreselectionMenu").GetComponent<PreselectionMenuScript>();
+        if (!pm.highlight.value)
+        {
+            return;
+        }
         RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out hit))
@@ -74,6 +70,9 @@ public class MenusHandler : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Displays the buttons of the preselection menu.
+    /// </summary>
     void ShowButtons()
     {
         GameObject preselectionUI = GameObject.Find("PreselectionMenu");
@@ -81,9 +80,11 @@ public class MenusHandler : MonoBehaviour
         Button showHideMenu = rootVisualElement.Q<Button>("show-hide-menu");
         Button amendment = rootVisualElement.Q<Button>("produce-amendment");
         Button restore = rootVisualElement.Q<Button>("restore-previous");
+        Toggle highlight = rootVisualElement.Q<Toggle>("includedToggle");
         showHideMenu.style.display = DisplayStyle.Flex;
         amendment.style.display = DisplayStyle.Flex;
         restore.style.display = DisplayStyle.Flex;
+        highlight.style.display = DisplayStyle.Flex;
     }
 
     /// <summary>

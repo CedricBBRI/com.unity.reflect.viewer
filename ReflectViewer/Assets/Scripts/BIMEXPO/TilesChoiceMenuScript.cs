@@ -129,6 +129,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
             rend.sharedMaterials = mats;
         }
         target.GetComponent<MeshRenderer>().material = tempMat;
+        changeMatScript = GameObject.Find("Root").GetComponent<ChangeMaterial>();
         changeMatScript.HighlightObject(target, false);
         changeMatScript.functionReplaceCalled = true;
         return;

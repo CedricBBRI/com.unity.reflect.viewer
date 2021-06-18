@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 using System.Linq;
+using Unity.Reflect.Viewer.UI;
 
 namespace UnityEngine.Reflect
 {
@@ -27,6 +28,27 @@ namespace UnityEngine.Reflect
         List<string> keyList2;
         GameObject root; //GameObject under which all imported gameobjects are stored
 
+        private bool buildingLoaded = false;
+        public List<Vector3> roomCenters { get; private set; }
+
+        void ExploitPLaceHolders()
+        {
+            Transform[] mytransformArr = GameObject.FindObjectsOfType(typeof(Transform)) as Transform[];
+            List<string> roomNames = new List<string>();
+            foreach (Transform tr in mytransformArr)
+            {
+                GameObject go = tr.gameObject;
+                var meta = go.GetComponent<Metadata>();
+                var mr = go.GetComponent<MeshRenderer>();
+                if (meta != null && mr != null && meta.GetParameter("Mark") == "BIMEXPOPH")
+                {
+                    roomCenters.Add(mr.bounds.center);
+                    mr.enabled = false;
+                    roomNames.Add(meta.GetParameter("Comments"));
+                    // also create reflection probes here later
+                }
+            }
+        }
 
         public void FindAll(string strInput)
         {
@@ -42,7 +64,9 @@ namespace UnityEngine.Reflect
                     if (go.transform.IsChildOf(root.transform) && meta != null && meta.GetParameters().Count() >= 1)
                     {
                         objList.Add(go);
-                        if (!meta.GetParameter("Category").Contains("Door")){ //Adds collision boxes to all objects except those labeled as door
+                        //Adds collision boxes to all objects except those labeled as door and the placeholders
+                        if (!meta.GetParameter("Category").Contains("Door") && meta.GetParameter("Mark") != "BIMEXPOPH")
+                        { 
                             go.AddComponent<MeshCollider>();
                         }
                         metaList.Add(meta);
@@ -193,11 +217,20 @@ namespace UnityEngine.Reflect
             slider.maxValue = 1;
             slider.value = 1;
 
+            UIStateManager.stateChanged += UIStateManager_stateChanged; // Listening to UI state change in order to know when the building is loaded.
         }
 
-        // Update is called once per frame
-        void Update()
+        private void UIStateManager_stateChanged(UIStateData obj)
         {
+            if (obj.progressData.totalCount > 0 && obj.progressData.currentProgress == obj.progressData.totalCount)    // Then the building is fully loaded
+            {
+                if (!buildingLoaded)
+                {
+                    ExploitPLaceHolders();
+                    buildingLoaded = true;
+                }
+            }
         }
+
     }
 }

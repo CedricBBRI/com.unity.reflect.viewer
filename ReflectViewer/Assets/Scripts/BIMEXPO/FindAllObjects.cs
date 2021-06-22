@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using System.Linq;
 using Unity.Reflect.Viewer.UI;
+using UnityEngine.UIElements;
 
 namespace UnityEngine.Reflect
 {
@@ -16,9 +17,9 @@ namespace UnityEngine.Reflect
         int numPhases = 0; //Number of phases
         public Dropdown dropDownPhases; //An EMPTY dropdown menu, gets populated with the detected phases
 
-        public Slider slider; //EMPTY slider to go between phases
+        public UI.Slider slider; //EMPTY slider to go between phases
         public Text sliderVal; //Name of current phase shown
-        public Toggle prevToggle; //To select if to show phase alone or include previous phases as well, toggles between off and on
+        public UI.Toggle prevToggle; //To select if to show phase alone or include previous phases as well, toggles between off and on
 
         public InputField sortBy; //EMPTY inputfield, gets populated automatically
         public Dropdown sortByDrop; //Empty dropdown, auto populated
@@ -30,11 +31,15 @@ namespace UnityEngine.Reflect
 
         private bool buildingLoaded = false;
         public List<Vector3> roomCenters { get; private set; }
+        public List<string> roomNames { get; private set; }
+        public List<GameObject> roomPlaceHolders { get; private set; }
 
         void ExploitPLaceHolders()
         {
+            roomCenters = new List<Vector3>();
             Transform[] mytransformArr = GameObject.FindObjectsOfType(typeof(Transform)) as Transform[];
-            List<string> roomNames = new List<string>();
+            roomNames = new List<string>();
+            roomPlaceHolders = new List<GameObject>();
             foreach (Transform tr in mytransformArr)
             {
                 GameObject go = tr.gameObject;
@@ -45,9 +50,32 @@ namespace UnityEngine.Reflect
                     roomCenters.Add(mr.bounds.center);
                     mr.enabled = false;
                     roomNames.Add(meta.GetParameter("Comments"));
+                    roomPlaceHolders.Add(go);
                     // also create reflection probes here later
+
+
                 }
             }
+            // Fill Menu for test
+            for (int i = 0; i < roomNames.Count; i++)
+            {
+                GameObject sm = GameObject.Find("SlidingMenu");
+                var rootVisualElement = sm.GetComponent<UIDocument>().rootVisualElement;
+                VisualElement mm = rootVisualElement.Q<VisualElement>("moving-menu");
+
+                UIElements.Button newButton = new UIElements.Button();
+                newButton.text = roomNames[i];
+                newButton.RegisterCallback<ClickEvent>(ev => GoToLocation(ev.target as UIElements.Button));
+                mm.Add(newButton);
+            }
+        }
+
+        void GoToLocation(UIElements.Button button)
+        {
+            Vector3 loc = roomCenters[roomNames.IndexOf(button.text)];
+            GameObject go = roomPlaceHolders[roomNames.IndexOf(button.text)];
+            FreeFlyCamera cam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<FreeFlyCamera>();
+            cam.SetMovePosition(loc, cam.transform.rotation);
         }
 
         public void FindAll(string strInput)

@@ -16,19 +16,25 @@ public class FaceMerging : MonoBehaviour
     double totArea1 = 0;
     GameObject root;
     ChangeMaterial changeMatScript;
+    TilesChoiceMenuScript tilesChoiceMenuScript;
     public Material defMat; //default material that gets used when adding/removing objects from merged list
 
     public List<GameObject> listCustom; //To be left empty
     public List<List<GameObject>> listOfListCustom; //The list of all merged lists, starts empty but is built upon automatically, start empty
     public int curList; //The index of the current list in listOfListCustom (yes, kinda confusing...), start empty too or at 0
+    public int countDebug;
+    public int countDebug2;
 
     // Start is called before the first frame update
     void Start()
     {
         root = GameObject.Find("Root");
         changeMatScript = root.GetComponent<ChangeMaterial>();
+        root = GameObject.Find("TileChoiceMenu");
+        tilesChoiceMenuScript = root.GetComponent<TilesChoiceMenuScript>();
 
         listCustom = new List<GameObject>();
+        listCustom.Add(root); //DEBUG
         listOfListCustom = new List<List<GameObject>>();
         listOfListCustom.Add(listCustom);
         curList = 0;
@@ -38,6 +44,12 @@ public class FaceMerging : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(root == null)
+        {
+            root = GameObject.Find("TileChoiceMenu");
+        }
+        countDebug = listOfListCustom[curList].Count;
+        countDebug = listOfListCustom.Count;
         if (changeMatScript.selectedObject != null)
         {
             //changeMatScript.ChangeObjectEmission(selectedObject, Color.green);
@@ -85,13 +97,15 @@ public class FaceMerging : MonoBehaviour
                 curList = listOfListCustom.Count - 1;
                 listOfListCustom[curList].Add(selectedObject);
             }
-            else if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.LeftControl)) //right click and ctrl, ADD TO OR REMOVE FROM CUSTOMLIST
+            else if (Input.GetMouseButtonUp(1))// && Input.GetKey(KeyCode.LeftControl)) //right click and ctrl, ADD TO OR REMOVE FROM CUSTOMLIST
             {
-                if (!listOfListCustom[curList].Contains(selectedObject)) //If current list doesn't dontain the object, add it
+                if (!listOfListCustom[curList].Contains(selectedObject)) //If current list doesn't contain the object, add it
                 {
+                    Debug.Log("curlist: " + curList.ToString());
                     listOfListCustom[curList].Add(selectedObject);
                     foreach (GameObject go in listOfListCustom[curList])
                     {
+                        Debug.Log(go.name);
                         //changeMatScript.ChangeMaterialClick(defMat, go);
                         changeMatScript.HighlightObject(go, true);
                     }
@@ -112,21 +126,27 @@ public class FaceMerging : MonoBehaviour
             }
 
             //DEBUG
-            foreach (GameObject go in listOfListCustom[curList])
-            {
-                //changeMatScript.ChangeMaterialClick(defMat, go);
-                changeMatScript.HighlightObject(go, true);
-            }
+            //if (listOfListCustom[curList] != null && listOfListCustom[curList].Count >= 1)
+            //{
+            //    foreach (GameObject go in listOfListCustom[curList])
+            //    {
+            //        //changeMatScript.ChangeMaterialClick(defMat, go);
+            //        changeMatScript.HighlightObject(go, true);
+            //    }
 
-            if (changeMatScript.functionReplaceCalled == true) //When the function to replace a material is called anywhere, check if the object is part of any merge list and if so change materials on all of them
-            {
-                foreach (GameObject go in listOfListCustom[curList])
-                {
-                    Debug.Log(go.name);
-                    changeMatScript.ChangeMaterialClick(selectedObject.GetComponent<Renderer>().material, go);
-                }
-                changeMatScript.functionReplaceCalled = false;
-            }
+            //    if (changeMatScript.functionReplaceCalled == true) //When the function to replace a material is called anywhere, check if the object is part of any merge list and if so change materials on all of them
+            //    {
+            //        foreach (GameObject go in listOfListCustom[curList])
+            //        {
+            //            Debug.Log(go.name);
+            //            //changeMatScript.ChangeMaterialClick(selectedObject.GetComponent<Renderer>().material, go);
+            //            tilesChoiceMenuScript.target = go;
+            //            tilesChoiceMenuScript.ApplyChosenMaterialToSurface();
+            //            tilesChoiceMenuScript.SaveChosenMaterialToDB();
+            //        }
+            //        changeMatScript.functionReplaceCalled = false;
+            //    }
+            //}
             //DEBUG
 
             if (changeMatScript.functionReplaceCalled == true) //When the function to replace a material is called anywhere, check if the object is part of any merge list and if so change materials on all of them

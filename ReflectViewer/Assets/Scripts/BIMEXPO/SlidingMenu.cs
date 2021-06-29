@@ -21,8 +21,8 @@ public class SlidingMenu : MonoBehaviour
         
         var rootVisualElement = GetComponent<UIDocument>().rootVisualElement;
         main = rootVisualElement.Q<VisualElement>("mainB");
-        main.style.top = 70.0f; // For some reason I have to set it here first, instead of simply read it from uxml..
-        main.style.height = 100.0f; // For some reason I have to set it here first, instead of simply read it from uxml..
+        main.style.right = -120.0f; // For some reason I have to set it here first, instead of simply read it from uxml..
+        main.style.width = 150.0f; // For some reason I have to set it here first, instead of simply read it from uxml..
         arrowContainer = rootVisualElement.Q<VisualElement>("arrow-container");
         mm = rootVisualElement.Q<VisualElement>("moving-menu");
         but = rootVisualElement.Q<Button>("show");
@@ -33,12 +33,12 @@ public class SlidingMenu : MonoBehaviour
     {
         // see https://github.com/Unity-Technologies/UIToolkitUnityRoyaleRuntimeDemo/blob/7f5d60d438f46a437dfed54dcbfc6ceb15eb02de/Assets/Scripts/UI/EndScreen.cs#L79
         // Get Starting position
-        startPosition = main.style.top.value.value;
-        float diff = main.worldBound.height - arrowContainer.worldBound.height;
+        startPosition = main.style.right.value.value;
+        float diff = main.worldBound.width - arrowContainer.worldBound.width;
         //main.style.height.value.value - arrowContainer.style.height.value.value;
-        endPosition = diff - startPosition;
+        endPosition = -(diff + startPosition) ;
 
-        main.experimental.animation.Start(new StyleValues { top = startPosition, opacity = 1 }, new StyleValues { top = endPosition, opacity = 1 }, AnimationDurationMs).Ease(Easing.OutQuad);
+        main.experimental.animation.Start(new StyleValues { right = startPosition, opacity = 1 }, new StyleValues { right = endPosition, opacity = 1 }, AnimationDurationMs).Ease(Easing.OutQuad);
     }
 
     private void OnApplicationQuit()

@@ -81,6 +81,8 @@ public class Web : MonoBehaviour
                 StartCoroutine(SetDefaultMaterialsJSON()); 
                 var fao = GameObject.Find("Root").GetComponent<FindAllObjects>();
                 fao.FindAll("Wall");
+                var prlm = GameObject.Find("PerRoomListMenu").GetComponent<PerRoomListMenu>();
+                prlm.Initialize();
                 tablesCreated = true;
             }
         }

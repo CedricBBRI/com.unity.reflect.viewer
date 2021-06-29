@@ -37,8 +37,6 @@ public class SlidingMenu : MonoBehaviour
         float diff = main.worldBound.height - arrowContainer.worldBound.height;
         //main.style.height.value.value - arrowContainer.style.height.value.value;
         endPosition = diff - startPosition;
-        //Debug.Log("DIFF: " + diff);
-        //Debug.Log("endPosition: " + endPosition);
 
         main.experimental.animation.Start(new StyleValues { top = startPosition, opacity = 1 }, new StyleValues { top = endPosition, opacity = 1 }, AnimationDurationMs).Ease(Easing.OutQuad);
     }

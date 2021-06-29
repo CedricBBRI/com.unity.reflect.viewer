@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System.Linq;
 using Unity.Reflect.Viewer.UI;
 using UnityEngine.UIElements;
+using System;
 
 namespace UnityEngine.Reflect
 {
@@ -34,6 +35,8 @@ namespace UnityEngine.Reflect
         public List<string> roomNames { get; private set; }
         public List<GameObject> roomPlaceHolders { get; private set; }
 
+        public Dictionary<string, List<int>> surfacesPerRoom { get; private set; }
+
         void ExploitPLaceHolders()
         {
             roomCenters = new List<Vector3>();
@@ -60,12 +63,15 @@ namespace UnityEngine.Reflect
             for (int i = 0; i < roomNames.Count; i++)
             {
                 GameObject sm = GameObject.Find("SlidingMenu");
+                var perRoomScript = GameObject.Find("PerRoomListMenu").GetComponent<PerRoomListMenu>();
                 var rootVisualElement = sm.GetComponent<UIDocument>().rootVisualElement;
                 VisualElement mm = rootVisualElement.Q<VisualElement>("moving-menu");
 
                 UIElements.Button newButton = new UIElements.Button();
                 newButton.text = roomNames[i];
                 newButton.RegisterCallback<ClickEvent>(ev => GoToLocation(ev.target as UIElements.Button));
+                newButton.RegisterCallback<ClickEvent>(ev => perRoomScript.RefreshMenu());
+                newButton.RegisterCallback<ClickEvent>(ev => perRoomScript.PopulateMenu(ev.target as UIElements.Button));
                 mm.Add(newButton);
             }
         }
@@ -80,6 +86,7 @@ namespace UnityEngine.Reflect
 
         public void FindAll(string strInput)
         {
+            Dictionary<int, string> tempSurfacesPerRoom = new Dictionary<int, string>();
             if (transformList.Count == 0) //If the elements are not yet detected, then detect them
             {
                 Initialize();
@@ -87,7 +94,6 @@ namespace UnityEngine.Reflect
                 foreach (Transform tr in transformList)
                 {
                     GameObject go = tr.gameObject;
-                    //Debug.Log(go.name + "\n");
                     var meta = go.GetComponent<Metadata>();
                     if (go.transform.IsChildOf(root.transform) && meta != null && meta.GetParameters().Count() >= 1)
                     {
@@ -100,13 +106,19 @@ namespace UnityEngine.Reflect
                         metaList.Add(meta);
                         if (go.name.Contains(strInput)) //Find all elements whose name includes...
                         {
-                            Debug.Log(go.name + "\n");
+                            //Debug.Log(go.name + "\n");
                         }
                         Dictionary<string, Metadata.Parameter> dict = meta.GetParameters();
                         curPhase = meta.GetParameter(dropDownPhases.captionText.text);
                         if (!phases.Contains(curPhase) && curPhase.Count() >= 1)
                         {
                             phases.Add(curPhase);
+                        }
+
+                        // Store in which room is each surface
+                        if (meta.GetParameter("Comments") != null && meta.GetParameter("Comments") != "" && (meta.GetParameter("Mark") == "O" || meta.GetParameter("Mark") == "A"))
+                        {
+                            tempSurfacesPerRoom.Add(Int32.Parse(meta.GetParameter("Id")), meta.GetParameter("Comments"));
                         }
                     }
                 }
@@ -125,8 +137,31 @@ namespace UnityEngine.Reflect
                 sortByDrop.ClearOptions();
                 sortByDrop.AddOptions(keyList);
 
-                UpdatePhasesShown();
+                //UpdatePhasesShown(); //AC - 23/06/21: I comment this because it leads to crash, (phases is empty). Not used for the moment, we can fix later.
             }
+
+            int count = 0;
+            List<string> roomsDone = new List<string>();
+            while (count < tempSurfacesPerRoom.Count)
+            {
+                string room = tempSurfacesPerRoom.Values.ElementAt(count);
+                List<int> ids = new List<int>();
+                if (!roomsDone.Contains(room))
+                {
+                    roomsDone.Add(room);
+                    foreach (var item in tempSurfacesPerRoom)
+                    {
+                        if (item.Value == room)
+                        {
+                            ids.Add(item.Key);
+                        }
+                    }
+                    surfacesPerRoom.Add(room, ids);
+                }
+                count += 1;
+                
+            }
+            
         }
         public void SortCategories() //Gets the categories from the metadata, and makes it possible to filter by them
         { 
@@ -240,7 +275,7 @@ namespace UnityEngine.Reflect
         // Start is called before the first frame update
         void Start()
         {
-            //Debug.Log("this is Start");
+            surfacesPerRoom = new Dictionary<string, List<int>>();
             slider.minValue = 1;
             slider.maxValue = 1;
             slider.value = 1;

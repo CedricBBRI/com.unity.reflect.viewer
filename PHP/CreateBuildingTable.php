@@ -27,7 +27,7 @@ else
 //Close the query access
 $result->closeCursor();
 
-$createCmd = "CREATE TABLE IF NOT EXISTS c" . $clientId . "_p" . $projectId . "_surfaces ( id_surface INT NOT NULL, area VARCHAR(20), level VARCHAR(20), surface_group SMALLINT, PRIMARY KEY (id_surface) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
+$createCmd = "CREATE TABLE IF NOT EXISTS c" . $clientId . "_p" . $projectId . "_surfaces ( id_surface INT NOT NULL, area VARCHAR(20), level VARCHAR(20), surface_group SMALLINT, room VARCHAR(50), PRIMARY KEY (id_surface) ) CHARACTER SET 'utf8' ENGINE=INNODB;";
 
 $result = $bdd->query($createCmd);
 if ($result->errorCode() == 00000) 
@@ -43,11 +43,12 @@ else
 $result->closeCursor();
 
 //Populate the table
-$insertCmd = "INSERT INTO c" . $clientId . "_p" . $projectId . "_surfaces (id_surface, area, level, surface_group) VALUES";
+$insertCmd = "INSERT INTO c" . $clientId . "_p" . $projectId . "_surfaces (id_surface, area, level, surface_group, room) VALUES";
 
 $ids = array();
 $areas = array();
 $levels = array();
+$rooms = array();
 
 $count = 0;
 
@@ -61,13 +62,16 @@ foreach ($_POST["Area"] as $key => $value) {
 foreach ($_POST["Level"] as $key => $value) {
 	$levels[] = $value;
 }
+foreach ($_POST["Room"] as $key => $value) {
+	$rooms[] = $value;
+}
 
 $newCount = 0;
 while ($newCount < $count) {
 	if ($newCount > 0) {
 		$insertCmd = $insertCmd . ", ";
 	}
-	$insertCmd = $insertCmd . "( '" . $ids[$newCount] . "', '" . $areas[$newCount] . "', '" . $levels[$newCount] .  "', NULL)";
+	$insertCmd = $insertCmd . "( '" . $ids[$newCount] . "', '" . $areas[$newCount] . "', '" . $levels[$newCount] .  "', NULL, '" . $rooms[$newCount] . "')";
 	$newCount += 1;
 }
 

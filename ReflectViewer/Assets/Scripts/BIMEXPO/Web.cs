@@ -150,6 +150,7 @@ public class Web : MonoBehaviour
         List<string> surfaceIDs = new List<string>();
         List<string> surfaceArea = new List<string>();
         List<string> surfaceLevels = new List<string>();
+        List<string> surfaceRooms = new List<string>();
         foreach (GameObject go in Resources.FindObjectsOfTypeAll(typeof(GameObject)) as GameObject[])
         {
             var meta = go.GetComponent<Metadata>();
@@ -161,6 +162,7 @@ public class Web : MonoBehaviour
                     surfaceIDs.Add(meta.GetParameter("Id"));
                     surfaceArea.Add(meta.GetParameter("Area"));
                     surfaceLevels.Add(meta.GetParameter("Base Constraint"));
+                    surfaceRooms.Add(meta.GetParameter("Comments"));
                 }
             }
         }
@@ -173,6 +175,7 @@ public class Web : MonoBehaviour
             form.AddField("ID[]", surfaceIDs[i]);
             form.AddField("Area[]", surfaceArea[i]);
             form.AddField("Level[]", surfaceLevels[i]);
+            form.AddField("Room[]", surfaceRooms[i]);
         }
         
         using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/CreateBuildingTable.php", form))

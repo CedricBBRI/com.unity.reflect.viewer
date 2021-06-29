@@ -59,24 +59,12 @@ namespace UnityEngine.Reflect
 
                 }
             }
-            // Fill Menu for test
-            for (int i = 0; i < roomNames.Count; i++)
-            {
-                GameObject sm = GameObject.Find("SlidingMenu");
-                var perRoomScript = GameObject.Find("PerRoomListMenu").GetComponent<PerRoomListMenu>();
-                var rootVisualElement = sm.GetComponent<UIDocument>().rootVisualElement;
-                VisualElement mm = rootVisualElement.Q<VisualElement>("moving-menu");
-
-                UIElements.Button newButton = new UIElements.Button();
-                newButton.text = roomNames[i];
-                newButton.RegisterCallback<ClickEvent>(ev => GoToLocation(ev.target as UIElements.Button));
-                newButton.RegisterCallback<ClickEvent>(ev => perRoomScript.RefreshMenu());
-                newButton.RegisterCallback<ClickEvent>(ev => perRoomScript.PopulateMenu(ev.target as UIElements.Button));
-                mm.Add(newButton);
-            }
+            // Fill Menu
+            var sms = GameObject.Find("SlidingMenu").GetComponent<SlidingMenu>();
+            sms.PopulateMenu(roomNames);
         }
 
-        void GoToLocation(UIElements.Button button)
+        public void GoToLocation(UIElements.Button button)
         {
             Vector3 loc = roomCenters[roomNames.IndexOf(button.text)];
             GameObject go = roomPlaceHolders[roomNames.IndexOf(button.text)];

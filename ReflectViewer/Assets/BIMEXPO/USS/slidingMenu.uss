@@ -9,3 +9,35 @@
     flex-shrink: 1;
     flex-grow: 0;
 }
+
+.room-notdone {
+    flex-grow: 0;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    white-space: normal;
+    font-size: 11px;
+    background-color: rgba(228, 228, 228, 0);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    color: rgb(255, 0, 0);
+}
+
+.room-done {
+    flex-grow: 0;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    white-space: normal;
+    font-size: 11px;
+    background-color: rgba(228, 228, 228, 0);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    color: rgb(0, 255, 0);
+}

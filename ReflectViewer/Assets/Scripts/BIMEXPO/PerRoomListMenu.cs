@@ -9,7 +9,7 @@ using System;
 public class PerRoomListMenu : MonoBehaviour
 {
     List<string> roomNames;
-    List<bool> roomValidated;
+    public List<bool> roomValidated { get; private set; }
     Label title;
     VisualElement root;
     List<int> surfacesInRoom, validatedSurfaces;

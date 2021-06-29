@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements.Experimental;
 using UnityEngine.UIElements;
+using UnityEngine.Reflect;
+
 //using DentedPixel;
 
 public class SlidingMenu : MonoBehaviour
@@ -18,8 +20,8 @@ public class SlidingMenu : MonoBehaviour
     // Start is called before the first frame update
     void OnEnable()
     {
-        
         var rootVisualElement = GetComponent<UIDocument>().rootVisualElement;
+        //rootVisualElement.styleSheets.Add(Resources.Load<StyleSheet>("USS/slidingMenu"));
         main = rootVisualElement.Q<VisualElement>("mainB");
         main.style.right = -120.0f; // For some reason I have to set it here first, instead of simply read it from uxml..
         main.style.width = 150.0f; // For some reason I have to set it here first, instead of simply read it from uxml..
@@ -27,6 +29,29 @@ public class SlidingMenu : MonoBehaviour
         mm = rootVisualElement.Q<VisualElement>("moving-menu");
         but = rootVisualElement.Q<Button>("show");
         but.RegisterCallback<ClickEvent>(ev => Animate());
+    }
+
+    /// <summary>
+    /// Fills the sliding menu with the list of room names, and register adequate callbacks.
+    /// </summary>
+    /// <param name="roomList">A list of string containing the names of all the rooms.</param>
+    public void PopulateMenu(List<string> roomList)
+    {
+        var rootVisualElement = GetComponent<UIDocument>().rootVisualElement;
+        var perRoomScript = GameObject.Find("PerRoomListMenu").GetComponent<PerRoomListMenu>();
+        VisualElement mm = rootVisualElement.Q<VisualElement>("moving-menu");
+        var fao = GameObject.Find("Root").GetComponent<FindAllObjects>();
+
+        for (int i = 0; i < roomList.Count; i++)
+        {
+            Button newButton = new Button();
+            newButton.text = roomList[i];
+            newButton.RegisterCallback<ClickEvent>(ev => fao.GoToLocation(ev.target as Button));
+            newButton.RegisterCallback<ClickEvent>(ev => perRoomScript.RefreshMenu());
+            newButton.RegisterCallback<ClickEvent>(ev => perRoomScript.PopulateMenu(ev.target as Button));
+            newButton.AddToClassList("room-notdone");
+            mm.Add(newButton);
+        }
     }
 
     private void Animate()

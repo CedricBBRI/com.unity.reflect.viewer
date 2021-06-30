@@ -117,6 +117,9 @@ public class PerRoomListMenu : MonoBehaviour
     /// <returns>True if the room is considered fully adressed, false otherwise.</returns>
     bool IsRoomValidated()
     {
+        // TODO: 1) get all surfaces in room, from DB (also get their tilable status)
+        // 2) get the list of validated surfaces from DB
+        // 3) compare both lists to check if room is validated or not
         if (validatedSurfaces.Count == surfacesInRoom.Count)
         {
             return true;
@@ -139,6 +142,7 @@ public class PerRoomListMenu : MonoBehaviour
             sender.AddToClassList("green-toggle");
             sender.RemoveFromClassList("red-toggle");
             validatedSurfaces.Add(Int32.Parse(sender.label));
+            // TODO: set the surface as 'validated' in DB
         }
         else
         {
@@ -153,21 +157,7 @@ public class PerRoomListMenu : MonoBehaviour
                 throw;
             }
         }
-        /*
-        ListView list = root.Q<ListView>();
-        Debug.Log(list.itemsSource);
-        bool allGreen = true;
 
-
-
-        foreach (var item in list.itemsSource)
-        {
-            if (!item.value)
-            {
-                allGreen = false;
-                break;
-            }
-        }*/
         if (IsRoomValidated())
         {
             title.RemoveFromClassList("item-notdone");

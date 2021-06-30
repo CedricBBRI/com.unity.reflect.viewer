@@ -85,6 +85,7 @@ public class Web : MonoBehaviour
                 prlm.Initialize();
                 tablesCreated = true;
             }
+            StartCoroutine(CreateSurfaceValidationTable());
         }
     }
 
@@ -99,6 +100,30 @@ public class Web : MonoBehaviour
         form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
 
         using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/CreateUserChoicesTable.php", form))
+        {
+            yield return www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                Debug.Log(www.downloadHandler.text);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Creates, if not yet existing, the table that stores the validation status of each surface of the building.
+    /// If the surface is not in the table, it means it's not validated.
+    /// </summary>
+    IEnumerator CreateSurfaceValidationTable()
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
+        form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
+
+        using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/CreateSurfaceValidationTable.php", form))
         {
             yield return www.SendWebRequest();
             if (www.result != UnityWebRequest.Result.Success)

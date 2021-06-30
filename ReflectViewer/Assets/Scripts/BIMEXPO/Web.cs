@@ -170,12 +170,13 @@ public class Web : MonoBehaviour
     /// </summary>
     IEnumerator createBuildingTable()
     {
-        yield return new WaitForSeconds(10); // Waits 10s for the model to be loaded before creating the table
+        //yield return new WaitForSeconds(10); // Waits 10s for the model to be loaded before creating the table
 
         List<string> surfaceIDs = new List<string>();
         List<string> surfaceArea = new List<string>();
         List<string> surfaceLevels = new List<string>();
         List<string> surfaceRooms = new List<string>();
+        List<string> surfaceCats = new List<string>();
         foreach (GameObject go in Resources.FindObjectsOfTypeAll(typeof(GameObject)) as GameObject[])
         {
             var meta = go.GetComponent<Metadata>();
@@ -188,6 +189,7 @@ public class Web : MonoBehaviour
                     surfaceArea.Add(meta.GetParameter("Area"));
                     surfaceLevels.Add(meta.GetParameter("Base Constraint"));
                     surfaceRooms.Add(meta.GetParameter("Comments"));
+                    surfaceCats.Add(meta.GetParameter("Mark"));
                 }
             }
         }
@@ -201,6 +203,7 @@ public class Web : MonoBehaviour
             form.AddField("Area[]", surfaceArea[i]);
             form.AddField("Level[]", surfaceLevels[i]);
             form.AddField("Room[]", surfaceRooms[i]);
+            form.AddField("TileCat[]", surfaceCats[i]);
         }
         
         using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/CreateBuildingTable.php", form))
@@ -1129,4 +1132,29 @@ public class Web : MonoBehaviour
             }
         }
     }
+
+    /*
+    public bool CheckRoomValidity(string roomName)
+    {
+        var prlms = GameObject.Find("PerRoomListMenu").GetComponent<PerRoomListMenu>();
+
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
+        form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
+        form.AddField("room", prlms.room_name.text);
+
+        using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/CheckRoomValidity.php", form))
+        {
+            yield return www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                Debug.Log(www.downloadHandler.text);
+            }
+        }
+    }
+    */
 }

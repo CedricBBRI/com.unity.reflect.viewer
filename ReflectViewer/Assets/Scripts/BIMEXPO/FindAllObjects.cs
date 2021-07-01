@@ -25,6 +25,10 @@ namespace UnityEngine.Reflect
         public InputField sortBy; //EMPTY inputfield, gets populated automatically
         public Dropdown sortByDrop; //Empty dropdown, auto populated
         public Dropdown showOnly; //Empty dropdown
+        /// <summary>
+        /// Dictionary that holds for each room its name, and it validity status (as a bool).
+        /// </summary>
+        public Dictionary<string, bool> roomValidities;
 
         List<string> keyList;
         List<string> keyList2;
@@ -35,7 +39,35 @@ namespace UnityEngine.Reflect
         public List<string> roomNames { get; private set; }
         public List<GameObject> roomPlaceHolders { get; private set; }
 
-        public Dictionary<string, List<int>> surfacesPerRoom { get; private set; }
+        public Dictionary<string, List<int>> AsurfacesPerRoom { get; private set; }
+        
+        public Dictionary<int, bool> surfacesValidities { get; private set; }
+
+        // Start is called before the first frame update
+        void Start()
+        {
+            AsurfacesPerRoom = new Dictionary<string, List<int>>();
+            roomValidities = new Dictionary<string, bool>();
+            surfacesValidities = new Dictionary<int, bool>();
+
+            slider.minValue = 1;
+            slider.maxValue = 1;
+            slider.value = 1;
+
+            UIStateManager.stateChanged += UIStateManager_stateChanged; // Listening to UI state change in order to know when the building is loaded.
+        }
+
+        private void UIStateManager_stateChanged(UIStateData obj)
+        {
+            if (obj.progressData.totalCount > 0 && obj.progressData.currentProgress == obj.progressData.totalCount)    // Then the building is fully loaded
+            {
+                if (!buildingLoaded)
+                {
+                    ExploitPLaceHolders();
+                    buildingLoaded = true;
+                }
+            }
+        }
 
         void ExploitPLaceHolders()
         {
@@ -62,14 +94,8 @@ namespace UnityEngine.Reflect
             // Fill Menu
             var sms = GameObject.Find("SlidingMenu").GetComponent<SlidingMenu>();
             sms.PopulateMenu(roomNames);
-        }
-
-        public void GoToLocation(UIElements.Button button)
-        {
-            Vector3 loc = roomCenters[roomNames.IndexOf(button.text)];
-            GameObject go = roomPlaceHolders[roomNames.IndexOf(button.text)];
-            FreeFlyCamera cam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<FreeFlyCamera>();
-            cam.SetMovePosition(loc, cam.transform.rotation);
+            var web = GameObject.Find("Root").GetComponent<Web>();
+            StartCoroutine(web.CreateRoomValidationTable(roomNames));
         }
 
         public void FindAll(string strInput)
@@ -88,7 +114,7 @@ namespace UnityEngine.Reflect
                         objList.Add(go);
                         //Adds collision boxes to all objects except those labeled as door and the placeholders
                         if (!meta.GetParameter("Category").Contains("Door") && meta.GetParameter("Mark") != "BIMEXPOPH")
-                        { 
+                        {
                             go.AddComponent<MeshCollider>();
                         }
                         metaList.Add(meta);
@@ -104,7 +130,7 @@ namespace UnityEngine.Reflect
                         }
 
                         // Store in which room is each surface
-                        if (meta.GetParameter("Comments") != null && meta.GetParameter("Comments") != "" && (meta.GetParameter("Mark") == "O" || meta.GetParameter("Mark") == "A"))
+                        if (meta.GetParameter("Comments") != null && meta.GetParameter("Comments") != "" && meta.GetParameter("Mark") == "A")
                         {
                             tempSurfacesPerRoom.Add(Int32.Parse(meta.GetParameter("Id")), meta.GetParameter("Comments"));
                         }
@@ -144,13 +170,51 @@ namespace UnityEngine.Reflect
                             ids.Add(item.Key);
                         }
                     }
-                    surfacesPerRoom.Add(room, ids);
+                    AsurfacesPerRoom.Add(room, ids);
                 }
                 count += 1;
-                
             }
-            
+            // Fill surfacesValidities
+            var web = GameObject.Find("Root").GetComponent<Web>();
+            StartCoroutine(web.GetAllSurfacesValidities(UpdateSurfacesAndRoomsValiditiesDict));
         }
+
+        public void UpdateSurfacesAndRoomsValiditiesDict(Dictionary<int, Tuple<bool, string>> surfacesDict)
+        {
+            surfacesValidities.Clear();
+            roomValidities.Clear();
+            foreach (KeyValuePair<string, List<int>> item in AsurfacesPerRoom)
+            {
+                string currentRoom = item.Key;
+                List<int> surfaces_ids_in_this_room = item.Value;
+                bool isRoomValid = true;
+                foreach (int id in surfaces_ids_in_this_room)
+                {
+                    bool isSurfaceValid = surfacesDict[id].Item1;
+                    surfacesValidities.Add(id, isSurfaceValid);
+                    if (!isSurfaceValid)
+                    {
+                        isRoomValid = false;
+                    }
+                }
+                roomValidities.Add(currentRoom, isRoomValid);
+            }
+            Debug.Log("roomValidities: ");
+            foreach (KeyValuePair<string, bool> item in roomValidities)
+            {
+                Debug.Log(item.Key + " , value: " + item.Value.ToString());
+            }
+        }
+
+        public void GoToLocation(UIElements.Button button)
+        {
+            Vector3 loc = roomCenters[roomNames.IndexOf(button.text)];
+            GameObject go = roomPlaceHolders[roomNames.IndexOf(button.text)];
+            FreeFlyCamera cam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<FreeFlyCamera>();
+            cam.SetMovePosition(loc, cam.transform.rotation);
+        }
+
+        
         public void SortCategories() //Gets the categories from the metadata, and makes it possible to filter by them
         { 
             string sortVal = keyList[sortByDrop.value];
@@ -260,28 +324,7 @@ namespace UnityEngine.Reflect
         }
 
 
-        // Start is called before the first frame update
-        void Start()
-        {
-            surfacesPerRoom = new Dictionary<string, List<int>>();
-            slider.minValue = 1;
-            slider.maxValue = 1;
-            slider.value = 1;
-
-            UIStateManager.stateChanged += UIStateManager_stateChanged; // Listening to UI state change in order to know when the building is loaded.
-        }
-
-        private void UIStateManager_stateChanged(UIStateData obj)
-        {
-            if (obj.progressData.totalCount > 0 && obj.progressData.currentProgress == obj.progressData.totalCount)    // Then the building is fully loaded
-            {
-                if (!buildingLoaded)
-                {
-                    ExploitPLaceHolders();
-                    buildingLoaded = true;
-                }
-            }
-        }
+        
 
     }
 }

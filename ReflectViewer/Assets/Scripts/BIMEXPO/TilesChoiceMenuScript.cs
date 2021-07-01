@@ -47,8 +47,8 @@ public class TilesChoiceMenuScript : MonoBehaviour
         imgContainer.AddToClassList("medaillon-container");
 
         Label menuTitle = rootVisualElement.Q<Label>("menu-title");
-        menuTitle.styleSheets.Add(Resources.Load<StyleSheet>("USS/testVE"));
-        menuTitle.AddToClassList("title-menu");
+        //menuTitle.styleSheets.Add(Resources.Load<StyleSheet>("USS/testVE"));
+        //menuTitle.AddToClassList("title-menu");
 
         PopulateMenu();
     }

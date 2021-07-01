@@ -85,13 +85,13 @@ public class Web : MonoBehaviour
                 prlm.Initialize();
                 tablesCreated = true;
             }
+            StartCoroutine(CreateSurfaceValidationTable());
         }
     }
 
     /// <summary>
     /// Prepares the user's tile choices table in the DB. 
     /// </summary>
-    /// <returns></returns>
     IEnumerator CreateUserChoicesTable()
     {
         WWWForm form = new WWWForm();
@@ -99,6 +99,58 @@ public class Web : MonoBehaviour
         form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
 
         using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/CreateUserChoicesTable.php", form))
+        {
+            yield return www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                Debug.Log(www.downloadHandler.text);
+            }
+        }
+    }
+
+    /// <summary>
+    /// If not yet existing, creates in DB the table that summarizes which rooms are 'validated' or not.
+    /// A validated room is a room for which the user has chosen all the tiles.
+    /// </summary>
+    public IEnumerator CreateRoomValidationTable(List<string> room_names)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
+        form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
+        for (int i = 0; i < room_names.Count; i++)
+        {
+            form.AddField("rooms[]", room_names[i]);
+        }
+
+        using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/CreateRoomValidationTable.php", form))
+        {
+            yield return www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                Debug.Log(www.downloadHandler.text);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Creates, if not yet existing, the table that stores the validation status of each surface of the building.
+    /// If the surface is not in the table, it means it's not validated.
+    /// </summary>
+    IEnumerator CreateSurfaceValidationTable()
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
+        form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
+
+        using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/CreateSurfaceValidationTable.php", form))
         {
             yield return www.SendWebRequest();
             if (www.result != UnityWebRequest.Result.Success)
@@ -145,11 +197,13 @@ public class Web : MonoBehaviour
     /// </summary>
     IEnumerator createBuildingTable()
     {
-        yield return new WaitForSeconds(10); // Waits 10s for the model to be loaded before creating the table
+        //yield return new WaitForSeconds(10); // Waits 10s for the model to be loaded before creating the table
 
         List<string> surfaceIDs = new List<string>();
         List<string> surfaceArea = new List<string>();
         List<string> surfaceLevels = new List<string>();
+        List<string> surfaceRooms = new List<string>();
+        List<string> surfaceCats = new List<string>();
         foreach (GameObject go in Resources.FindObjectsOfTypeAll(typeof(GameObject)) as GameObject[])
         {
             var meta = go.GetComponent<Metadata>();
@@ -161,6 +215,8 @@ public class Web : MonoBehaviour
                     surfaceIDs.Add(meta.GetParameter("Id"));
                     surfaceArea.Add(meta.GetParameter("Area"));
                     surfaceLevels.Add(meta.GetParameter("Base Constraint"));
+                    surfaceRooms.Add(meta.GetParameter("Comments"));
+                    surfaceCats.Add(meta.GetParameter("Mark"));
                 }
             }
         }
@@ -173,6 +229,8 @@ public class Web : MonoBehaviour
             form.AddField("ID[]", surfaceIDs[i]);
             form.AddField("Area[]", surfaceArea[i]);
             form.AddField("Level[]", surfaceLevels[i]);
+            form.AddField("Room[]", surfaceRooms[i]);
+            form.AddField("TileCat[]", surfaceCats[i]);
         }
         
         using (UnityWebRequest www = UnityWebRequest.Post("http://bimexpo/CreateBuildingTable.php", form))
@@ -1100,5 +1158,224 @@ public class Web : MonoBehaviour
                 }
             }
         }
+    }
+
+    public IEnumerator SetSurfaceValidity(int surfaceId, bool valid)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
+        form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
+        form.AddField("surfaceId", surfaceId);
+        if (valid)
+        {
+            form.AddField("validity", "1");
+        }
+        else
+        {
+            form.AddField("validity", "0");
+        }
+
+        var fao = GameObject.Find("Root").GetComponent<FindAllObjects>();
+        fao.surfacesValidities[surfaceId] = valid;
+
+        string phpScript = "http://bimexpo/SetSurfaceValidity.php";
+
+        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        {
+            yield return www.SendWebRequest();
+            while (www.result == UnityWebRequest.Result.InProgress)
+            {
+                // Just wait
+            }
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                Debug.Log(www.downloadHandler.text);
+            }
+        }
+
+        // Now check if that changes any room validity
+        bool roomFound = false;
+        string roomName = null;
+        foreach (KeyValuePair<string, List<int>> item in fao.AsurfacesPerRoom)
+        {
+            roomName = item.Key;
+            foreach (int surfId in item.Value)
+            {
+                if (surfId == surfaceId)
+                {
+                    roomFound = true;
+                    break;
+                }
+            }
+            if (roomFound)
+            {
+                break;
+            }
+        }
+        if (!roomFound)
+        {
+            throw new Exception("Room not found!");
+        }
+
+        var prlms = GameObject.Find("PerRoomListMenu").GetComponent<PerRoomListMenu>();
+        StartCoroutine(CheckRoomValidityFromDB(roomName, (validationResult) =>
+        {
+            if (validationResult)
+            {
+                fao.roomValidities[roomName] = true;
+                if (prlms.room_name.text == roomName)
+                {
+                    prlms.thisRoomValidity = true;
+                }
+            }
+            else
+            {
+                fao.roomValidities[roomName] = false;
+                if (prlms.room_name.text == roomName)
+                {
+                    prlms.thisRoomValidity = false;
+                }
+            }
+        }));
+    }
+
+    public IEnumerator SetRoomValidity(string room_name, bool valid)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
+        form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
+        form.AddField("room_name", room_name);
+        if (valid)
+        {
+            form.AddField("validity", "1");
+        }
+        else
+        {
+            form.AddField("validity", "0");
+        }
+
+        string phpScript = "http://bimexpo/SetRoomValidity.php";
+
+        using (UnityWebRequest www = UnityWebRequest.Post(phpScript, form))
+        {
+            yield return www.SendWebRequest();
+            while (www.result == UnityWebRequest.Result.InProgress)
+            {
+                // Just wait
+            }
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                Debug.Log(www.downloadHandler.text);
+            }
+        }
+    }
+
+    public IEnumerator GetValidatedRooms()
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
+        form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
+
+        string phpScript = "http://bimexpo/GetValidatedRooms.php";
+        JSONArray jsonResponse = new JSONArray();
+        bool wait = true;
+        StartCoroutine(GetJSONResultFromDBCoroutine(phpScript, (jsonResult) =>
+        {
+            jsonResponse = jsonResult; // Recuperate jsonResult (which is the argument of the callback method, passed in inside GetJSONResultFromDB. So it is jsonArray.)
+            wait = false;              // This line is reached only upon callback completion inside GetJSONResultFromDB.
+        }, form));
+
+        while (wait)    // Wait for the call to DB in GetJSONResultFromDB is done, so we're sure we have now retrieved jsonResult inside jsonMaterials.
+        {
+            yield return null;
+        }
+
+        // Read the JSON result
+        for (int i = 0; i < jsonResponse.Count; i++)
+        {
+            string id_surface = jsonResponse[i].AsObject["room_name"];
+            int validated = jsonResponse[i].AsObject["validated"].AsInt;
+        }
+    }
+
+    public IEnumerator GetAllSurfacesValidities(Action<Dictionary<int, Tuple<bool, string>>> performActionOnSurfacesList)
+    {
+        var surfacesDict = new Dictionary<int, Tuple<bool, string>>();
+        var fao = GameObject.Find("Root").GetComponent<FindAllObjects>();
+
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
+        form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
+
+        string phpScript = "http://bimexpo/CheckAllSurfacesValidities.php";
+        JSONArray jsonResponse = new JSONArray();
+        bool wait = true;
+        StartCoroutine(GetJSONResultFromDBCoroutine(phpScript, (jsonResult) =>
+        {
+            jsonResponse = jsonResult; // Recuperate jsonResult (which is the argument of the callback method, passed in inside GetJSONResultFromDB. So it is jsonArray.)
+            wait = false;              // This line is reached only upon callback completion inside GetJSONResultFromDB.
+        }, form));
+
+        while (wait)    // Wait for the call to DB in GetJSONResultFromDB is done, so we're sure we have now retrieved jsonResult inside jsonMaterials.
+        {
+            yield return null;
+        }
+
+        // Read the JSON result
+        for (int i = 0; i < jsonResponse.Count; i++)
+        {
+            int id_surface = jsonResponse[i].AsObject["id_surface"].AsInt;
+            bool validated = (jsonResponse[i].AsObject["validated"] == "1");
+            string room_name = jsonResponse[i].AsObject["room"];
+            var myTuple = new Tuple<bool, string>(validated, room_name);
+            surfacesDict.Add(id_surface, myTuple);
+        }
+        performActionOnSurfacesList(surfacesDict);
+    }
+
+    public IEnumerator CheckRoomValidityFromDB(string roomName, Action<bool> performAction)
+    {
+        var prlms = GameObject.Find("PerRoomListMenu").GetComponent<PerRoomListMenu>();
+
+        WWWForm form = new WWWForm();
+        form.AddField("clientId", GameObject.Find("Root").GetComponent<DBInteractions>().clientId);
+        form.AddField("projectId", GameObject.Find("Root").GetComponent<DBInteractions>().projectId);
+        form.AddField("room", roomName);
+
+        string phpScript = "http://bimexpo/CheckRoomValidity.php";
+        JSONArray jsonResponse = new JSONArray();
+        bool wait = true;
+        StartCoroutine(GetJSONResultFromDBCoroutine(phpScript, (jsonResult) =>
+        {
+            jsonResponse = jsonResult; // Recuperate jsonResult (which is the argument of the callback method, passed in inside GetJSONResultFromDB. So it is jsonArray.)
+            wait = false;              // This line is reached only upon callback completion inside GetJSONResultFromDB.
+        }, form));
+
+        while (wait)    // Wait for the call to DB in GetJSONResultFromDB is done, so we're sure we have now retrieved jsonResult inside jsonMaterials.
+        {
+            yield return null;
+        }
+
+        // Read the JSON result
+        bool valid = true;
+        for (int i = 0; i < jsonResponse.Count; i++)
+        {
+            string id_surface = jsonResponse[i].AsObject["id_surface"];
+            int validated = jsonResponse[i].AsObject["validated"].AsInt;
+            if (validated != 1)
+            {
+                valid = false;
+                break;
+            }
+        }
+        performAction(valid);
     }
 }

@@ -86,7 +86,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
         }
     }
 
-    void ApplyChosenMaterialToSurface()
+    public void ApplyChosenMaterialToSurface()
     {
         // First check if a selection was done
         var mh = GameObject.Find("Root").GetComponent<MenusHandler>();

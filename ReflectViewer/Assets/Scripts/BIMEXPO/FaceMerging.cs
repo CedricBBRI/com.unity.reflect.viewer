@@ -25,6 +25,7 @@ public class FaceMerging : MonoBehaviour
     public int curList; //The index of the current list in listOfListCustom (yes, kinda confusing...), start empty too or at 0
     public int countDebug;
     public int countDebug2;
+    bool mergedSelected;
 
     // Start is called before the first frame update
     void Start()
@@ -47,6 +48,7 @@ public class FaceMerging : MonoBehaviour
         listOfListCustom = new List<List<GameObject>>();
         listOfListCustom.Add(listCustom);
         curList = 0;
+        mergedSelected = false;
 
     }
 
@@ -79,7 +81,7 @@ public class FaceMerging : MonoBehaviour
             namePoss = new List<string>();
             curCost1 = 0.0;
             totArea1 = 0.0;
-            if (listCustom.Count >= 5) //If the current merged list is not empty
+            if (listCustom.Count >= 5000) //If the current merged list is not empty
             {
                 foreach (GameObject go in listCustom)
                 {
@@ -105,21 +107,24 @@ public class FaceMerging : MonoBehaviour
             //Debug.Log("test2");                                                                                                                                                              //Generates script of costs
             if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftAlt)) //right click and ctrl and alt; ADD NEW CUSTOMLIST!!!
             {
-                Debug.Log("ctrl alt");
+                //Debug.Log("ctrl alt");
                 listOfListCustom.Add(new List<GameObject>());
                 curList = listOfListCustom.Count - 1;
                 listOfListCustom[curList].Add(selectedObject);
             }
-            else if (Input.GetMouseButtonUp(1))// && Input.GetKey(KeyCode.LeftControl)) //right click and ctrl, ADD TO OR REMOVE FROM CUSTOMLIST
+            else if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.LeftControl)) //right click and ctrl, ADD TO OR REMOVE FROM CUSTOMLIST
             {
-                //Debug.Log("Checkeckh");
+                if(curList == -1)
+                {
+
+                }
                 if (!listOfListCustom[curList].Contains(selectedObject)) //If current list doesn't contain the object, add it
                 {
-                    Debug.Log("curlist: " + curList.ToString());
+                    //Debug.Log("curlist: " + curList.ToString());
                     listOfListCustom[curList].Add(selectedObject);
                     foreach (GameObject go in listOfListCustom[curList])
                     {
-                        Debug.Log(go.name);
+                        //Debug.Log(go.name);
                         //changeMatScript.ChangeMaterialClick(defMat, go);
                         changeMatScript.HighlightObject(go, true);
                     }
@@ -129,26 +134,43 @@ public class FaceMerging : MonoBehaviour
                     if (i != curList && listOfListCustom[i].Contains(selectedObject))
                     {
                         listOfListCustom[i].Remove(selectedObject);
-                        foreach (GameObject go in listOfListCustom[i])
-                        {
-                            //changeMatScript.ChangeMaterialClick(defMat, go);
-                            changeMatScript.HighlightObject(go, false);
-                        }
                     }
                 }
                 Debug.Log(listOfListCustom[curList].Count.ToString());
 
             }
+            for (int i = 0; i < listOfListCustom.Count; i++)
+            {
+                foreach (GameObject go in listOfListCustom[i])
+                {
+                    //changeMatScript.ChangeMaterialClick(defMat, go);
+                    changeMatScript.HighlightObject(go, false);
+                }
+            }
+            //foreach (GameObject go in listOfListCustom[curList])
+            //{
+            //    changeMatScript.HighlightObject(go, true);
+            //}
 
-            //DEBUG
-            if (listOfListCustom[curList] != null && listOfListCustom[curList].Count >= 1)
+            mergedSelected = false; ;
+            for (int i = 0; i < listOfListCustom.Count; i++)
+            {
+                if (listOfListCustom[i].Contains(selectedObject))
+                {
+                    curList = i;
+                    mergedSelected = true;
+                }
+            }
+
+
+            if (mergedSelected && curList >= 0 && listOfListCustom[curList] != null && listOfListCustom[curList].Count >= 1)
             {
                 foreach (GameObject go in listOfListCustom[curList])
                 {
                     //changeMatScript.ChangeMaterialClick(defMat, go);
                     changeMatScript.HighlightObject(go, true);
 
-                    Debug.Log("REPLACE: " + go.name); //This gets called at least
+                    //Debug.Log("REPLACE: " + go.name); //This gets called at least
                     if (changeMatScript.functionReplaceCalled == true && tilesChoiceMenuScript.chosenMaterial != null) //When the function to replace a material is called anywhere, check if the object is part of any merge list and if so change materials on all of them
                     {
                         tilesChoiceMenuScript.selectionDone = true;
@@ -161,22 +183,6 @@ public class FaceMerging : MonoBehaviour
                 }
                 changeMatScript.functionReplaceCalled = false;
             }
-            //DEBUG
-
-            //if (changeMatScript.functionReplaceCalled == true) //When the function to replace a material is called anywhere, check if the object is part of any merge list and if so change materials on all of them
-            //{
-            //    for (int i = 0; i < listOfListCustom.Count; i++)
-            //    {
-            //        if (listOfListCustom[i].Contains(selectedObject))
-            //        {
-            //            foreach (GameObject go in listOfListCustom[i])
-            //            {
-            //                changeMatScript.ChangeMaterialClick(selectedObject.GetComponent<Renderer>().material, go);
-            //            }
-            //        }
-            //    }
-            //    changeMatScript.functionReplaceCalled = false;
-            //}
         }
     }
 

@@ -11,7 +11,7 @@ public class TilesChoiceMenuScript : MonoBehaviour
     public string chosenMaterial, chosenTexturePath;
     public GameObject target;
     private Button okButton, okScButton, cancelButton;
-    private bool selectionDone = false;
+    public bool selectionDone = false;
 
     //CEDRIC
     ChangeMaterial changeMatScript;

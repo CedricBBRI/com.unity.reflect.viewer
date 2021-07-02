@@ -266,7 +266,7 @@ namespace UnityEngine.Reflect
 
         public void ChangeMaterialClick(Material mat, GameObject go) //Changes materials (all of them) of selectedObject to mat
         {
-            //functionReplaceCalled = true;
+            functionReplaceCalled = true;
             //TEST
             if (matPoss.Count >= 1)
             {

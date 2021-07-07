@@ -131,7 +131,7 @@ namespace UnityEngine.Reflect
             }
         }
 
-        GameObject ClickObjects() //Returns the gameobject that is clicked
+        public GameObject ClickObjects() //Returns the gameobject that is clicked
         {
             if (selectedObject != null)
             {
@@ -234,8 +234,11 @@ namespace UnityEngine.Reflect
         public void HighlightObject(GameObject obj, bool on)
         {
             OutlineUI outline;
-            Destroy(obj.GetComponent<OutlineUI>());
-            if (on)
+            if (!on)
+            {
+                Destroy(obj.GetComponent<OutlineUI>());
+            }
+            if (on && obj.GetComponent<OutlineUI>() == null)
             {
                 if (obj.GetComponent<OutlineUI>() == null)
                 {

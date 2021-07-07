@@ -63,8 +63,6 @@ public class FaceMerging : MonoBehaviour
         //countDebug = listOfListCustom.Count;
         if (changeMatScript.selectedObject != null)
         {
-            //changeMatScript.ChangeObjectEmission(selectedObject, Color.green);
-            //changeMatScript.HighlightObject(selectedObject, true);
             selectedObject = changeMatScript.selectedObject;
         }
         if (selectedObject != null && selectedObject.GetComponent<Metadata>() != null)
@@ -104,7 +102,13 @@ public class FaceMerging : MonoBehaviour
             }
             //textCosts.text = "Area is " + curArrea.ToString() + "\nThe price of scenario " + curScenario1 + " is " + curCost1.ToString() + "\nSelected area is " + totArea1;// + "\nThe price of scenario " + curScenario2 + " is " + curCost2.ToString() + "\nSelected area is " + totArea2 + "\nTotal area: " + (totArea1 + totArea2) +"\nTotal cost: " + (curCost1 + curCost2).ToString();
 
-            //Debug.Log("test2");                                                                                                                                                              //Generates script of costs
+
+            
+
+            if (Input.GetMouseButtonUp(1))
+            {
+                selectedObject = ClickObjects();
+            }
             if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftAlt)) //right click and ctrl and alt; ADD NEW CUSTOMLIST!!!
             {
                 //Debug.Log("ctrl alt");
@@ -114,10 +118,7 @@ public class FaceMerging : MonoBehaviour
             }
             else if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.LeftControl)) //right click and ctrl, ADD TO OR REMOVE FROM CUSTOMLIST
             {
-                if(curList == -1)
-                {
-
-                }
+                
                 if (!listOfListCustom[curList].Contains(selectedObject)) //If current list doesn't contain the object, add it
                 {
                     //Debug.Log("curlist: " + curList.ToString());
@@ -139,14 +140,6 @@ public class FaceMerging : MonoBehaviour
                 Debug.Log(listOfListCustom[curList].Count.ToString());
 
             }
-            for (int i = 0; i < listOfListCustom.Count; i++)
-            {
-                foreach (GameObject go in listOfListCustom[i])
-                {
-                    //changeMatScript.ChangeMaterialClick(defMat, go);
-                    changeMatScript.HighlightObject(go, false);
-                }
-            }
             //foreach (GameObject go in listOfListCustom[curList])
             //{
             //    changeMatScript.HighlightObject(go, true);
@@ -162,6 +155,16 @@ public class FaceMerging : MonoBehaviour
                 }
             }
 
+            for (int i = 0; i < listOfListCustom.Count; i++)
+            {
+                foreach (GameObject go in listOfListCustom[i])
+                {
+                    if (!listOfListCustom[i].Contains(selectedObject))
+                    {
+                        changeMatScript.HighlightObject(go, false);
+                    }
+                }
+            }
 
             if (mergedSelected && curList >= 0 && listOfListCustom[curList] != null && listOfListCustom[curList].Count >= 1)
             {
@@ -184,6 +187,29 @@ public class FaceMerging : MonoBehaviour
                 changeMatScript.functionReplaceCalled = false;
             }
         }
+    }
+
+    GameObject ClickObjects() //Returns the gameobject that is clicked
+    {
+        Ray ray;
+        GameObject target = null;
+        if (Input.touchCount > 2 && Input.touches[2].phase == TouchPhase.Began)
+        {
+            ray = Camera.main.ScreenPointToRay(Input.touches[2].position); //touch
+        }
+        else
+        {
+            ray = Camera.main.ScreenPointToRay(Input.mousePosition); //Mouse
+        }
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit)) // you can also only accept hits to some layer and put your selectable units in this layer
+        {
+            if (hit.transform != null && hit.transform.IsChildOf(root.transform))
+            {
+                target = hit.transform.gameObject;
+            }
+        }
+        return target;
     }
 
     void OnApplicationQuit() //When Unity halts, create a new CSV file
